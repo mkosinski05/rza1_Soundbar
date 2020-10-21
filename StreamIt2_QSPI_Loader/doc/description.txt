@@ -1,0 +1,137 @@
+/***********************************************************************************************************************
+* DISCLAIMER
+* This software is supplied by Renesas Electronics Corporation and is only intended for use with Renesas products. No 
+* other uses are authorized. This software is owned by Renesas Electronics Corporation and is protected under all 
+* applicable laws, including copyright laws. 
+* THIS SOFTWARE IS PROVIDED "AS IS" AND RENESAS MAKES NO WARRANTIES REGARDING
+* THIS SOFTWARE, WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, 
+* FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. ALL SUCH WARRANTIES ARE EXPRESSLY DISCLAIMED. TO THE MAXIMUM 
+* EXTENT PERMITTED NOT PROHIBITED BY LAW, NEITHER RENESAS ELECTRONICS CORPORATION NOR ANY OF ITS AFFILIATED COMPANIES 
+* SHALL BE LIABLE FOR ANY DIRECT, INDIRECT, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES FOR ANY REASON RELATED TO THIS 
+* SOFTWARE, EVEN IF RENESAS OR ITS AFFILIATES HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+* Renesas reserves the right, without notice, to make changes to this software and to discontinue the availability of 
+* this software. By using this software, you agree to the additional terms and conditions found by accessing the 
+* following link:
+* http://www.renesas.com/disclaimer 
+*
+* Copyright (C) 2017 Renesas Electronics Corporation. All rights reserved.    
+***********************************************************************************************************************/
+/***********************************************************************************************************************
+* System Name : RZ/A1L R7S721031 Sample Program
+* File Name   : Description.txt
+* Sample Name : StreamIt2_QSPI_LOADER
+* Description : Demonstrates using a stub loader (bootloader) to copy user 
+*               application from QSPI into RAM and then execute the user code
+*               in RAM 
+* Build Configurations:
+*       HardwareDebug configurations - No optimisation & includes Debug information,
+*       Release Configurations - -O3 Optimisation & no debug information.
+*       
+* Folder Contents:
+*                  \src                           - contains all the source and headers files for the project.
+*                                                   src folder contains the following subfolders and "main.c" 
+*                                                   file.
+*                  \src\renesas                   - all the application specific files
+*                  \src\renesas\application       - demonstration application
+*                  \src\renesas\compiler          - microcontroller specific files, boot files,
+*                                                   internal peripheral drivers etc.
+*                  \src\renesas\configuration     - configuration files for each component
+*                  \src\renesas\device            - drivers for any microcontroller peripherals used in 
+*                                                   application
+*                  \src\renesas\peripherals       - driver files for board specific devices
+*
+***********************************************************************************************************************/
+/***********************************************************************************************************************
+* History     : Jan 05, 2017 Rev.1.00.00     Initial documentation
+***********************************************************************************************************************/
+
+1. Before Use
+
+  This sample program has been written for and tested upon the CPU board 
+  STREAM-IT.  
+
+  ****************************** CAUTION ******************************
+   This sample program is for reference only. Please use this sample 
+   program for technical reference.
+  ****************************** CAUTION ******************************
+
+  Do not compile this sample with the size optimsation setting -Os 
+  use -O3 instead. 
+
+
+
+2. System Requirements
+
+  The system requirements for this sample program are listed below.
+
+    CPU                      : RZ/A1L
+    Evaluation board         : STREAM-IT (CPU board)
+    Toolchain                : GNU 4.9-GNUARM-NONE_v16.01
+    Development environment  : Renesas e2studio
+                               Version 5.x
+                                          
+3. Operation Confirmation Conditions
+  
+  (1) Operating frequency
+      The RZ/A1L clock pulse oscillator is set to see that the RZ/A1L clocks 
+      on the CPU board STREAM-IT have the following frequencies. 
+      - Maximum operating frequency     : 400MHz
+      - Internal bus clock              : 133.33MHz
+      - Peripheral clock1               : 66.67MHz
+      - Peripheral clock0               : 33.33MHz
+
+  (2) Linker file configuration
+      StreamIt2QspiBootStandalone.ld - Boot program loaded into QSPI memory. 
+            
+  (3) Setting for cache  
+      Initial setting for L1 cache is executed by MMU. 
+      This sample program does not provide L2 cache setting.
+
+  (4) Operational Procedure
+
+  Use the following procedure to execute this sample program.
+
+  (5) Setting for jumpers
+      Set the jumpers of the STREAM-IT as follows.
+
+      
+      No Jumpers shall be fitted
+           
+     
+  (7) Setting up the sample program
+      Copy the [StreamIt2_QSPI_Loader] directory into the e2studio work space
+      directory of the host PC.
+
+  (8) Activating integrated development environment
+      Start integrated development environment e2studio.
+      Import the sample project into a workspace as described in the tutorial
+      manual.
+
+  (9) Building [StreamIt2_QSPI_Loader] project
+      This is the boot loader project to be programmed into the QSPI 
+      device (U4 / U16) on the RZ/A1L. 
+      After importing [StreamIt2_QSPI_Loader] project, select the Release
+      build configuration from the menu bar: 
+        Project > Build Configurations > Set Active > Release
+      Build this configuration to generate the 
+      binary file StreamIt2_QSPI_Loader_Release.bin.
+      Copy the .bin file to the scripts folder
+
+  (10) Review the file Program_QSPI_Loader.bat.
+
+      Ensure that Jlink is installed on your host PC. 
+      This batch file was tested and works with Ver 6.12f of the JLink.exe 
+
+  (11) Loading the boot loader program into the QSPI device
+      Run the batch file batch file (Program_QSPI_Loader.bat) which calls 
+      the JLink executable, instructing it to load the binary file (StreamIt2_QSPI_Loader_Release.bin) 
+      found in the Release folder. This instruction is specified in the 
+      Program_QSPI_Loader.command file.
+
+      Please refer to the following document 
+      RZ/A1L QSPI Boot Loader Application Note
+      for more information. 
+          
+
+          
+ 

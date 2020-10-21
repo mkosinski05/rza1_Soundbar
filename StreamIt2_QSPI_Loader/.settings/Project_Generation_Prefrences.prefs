@@ -1,0 +1,2 @@
+com.renesas.cdt.rz.Release.Linker.option.archiveSearchDirectories.696499579="${TCINSTALL}/lib/gcc/arm-none-eabi//${GCC_VERSION}/interwork";"${TCINSTALL}/arm-none-eabi/lib/armv7-ar/thumb";"${TCINSTALL}/lib/gcc/arm-none-eabi/${GCC_VERSION}/armv7-ar/thumb";
+eclipse.preferences.version=1

@@ -1,0 +1,182 @@
+/*******************************************************************************
+ * DISCLAIMER
+ * This software is supplied by Renesas Electronics Corporation and is only
+ * intended for use with Renesas products. No other uses are authorized. This
+ * software is owned by Renesas Electronics Corporation and is protected under
+ * all applicable laws, including copyright laws.
+ * THIS SOFTWARE IS PROVIDED "AS IS" AND RENESAS MAKES NO WARRANTIES REGARDING
+ * THIS SOFTWARE, WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING BUT NOT
+ * LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
+ * AND NON-INFRINGEMENT. ALL SUCH WARRANTIES ARE EXPRESSLY DISCLAIMED.
+ * TO THE MAXIMUM EXTENT PERMITTED NOT PROHIBITED BY LAW, NEITHER RENESAS
+ * ELECTRONICS CORPORATION NOR ANY OF ITS AFFILIATED COMPANIES SHALL BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES FOR
+ * ANY REASON RELATED TO THIS SOFTWARE, EVEN IF RENESAS OR ITS AFFILIATES HAVE
+ * BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+ * Renesas reserves the right, without notice, to make changes to this software
+ * and to discontinue the availability of this software. By using this software,
+ * you agree to the additional terms and conditions found by accessing the
+ * following link:
+ * http://www.renesas.com/disclaimer
+ *
+ * Copyright (C) 2016 Renesas Electronics Corporation. All rights reserved.
+ *******************************************************************************/
+/*******************************************************************************
+ * File Name     : spibsc_ioset_drv.c
+ * Version       : 1.00
+ * Device(s)     : RZ/A1L
+ * Tool-Chain    : GNUARM-NONE-EABI-v16.01
+ * OS            : None
+ * H/W Platform  : Stream it! v2
+ * Description   : User defined SPIBSC function
+ *******************************************************************************/
+/*******************************************************************************
+ * History       : DD.MM.YYYY Version Description
+ *               : 24.08.16   1.00    First Release
+ *******************************************************************************/
+
+/******************************************************************************
+ Includes   <System Includes> , "Project Includes"
+ ******************************************************************************/
+#include "typedefine.h"
+#include "sflash.h"
+#include "spibsc.h"
+#include "spibsc_config.h"
+#include "r_spibsc_ioset_api.h"
+
+/******************************************************************************
+ Typedef definitions
+ ******************************************************************************/
+
+/******************************************************************************
+ Macro definitions
+ ******************************************************************************/
+
+/******************************************************************************
+ Imported global variables and functions (from other files)
+ ******************************************************************************/
+
+/******************************************************************************
+ Exported global variables and functions (to be accessed by other files)
+ ******************************************************************************/
+
+/******************************************************************************
+ Private global variables and functions
+ ******************************************************************************/
+
+/******************************************************************************
+ * Function Name: Userdef_SPIBSC_Set_Config
+ * Description  : The setting function of SPIBSC.
+ * Arguments    : uint32_t ch_no
+ *                st_spibsc_cfg_t *spibsccfg
+ * Return Value : none
+ ******************************************************************************/
+void Userdef_SPIBSC_Set_Config (uint32_t ch_no, st_spibsc_cfg_t *spibsccfg)
+{
+#if (SPIBSC_BUS_WITDH == 1)
+    /* command */
+#if (SPIBSC_OUTPUT_ADDR == SPIBSC_OUTPUT_ADDR_32)
+#if (SPIBSC_BUS_MODE == SPIBSC_SDR_TRANS)
+    spibsccfg->udef_cmd = SFLASHCMD_BYTE_READ_4B; /* ECH Command */
+#else
+    spibsccfg->udef_cmd = SFLASHCMD_BYTE_READ_4B_DTR; /* ECH Command */
+#endif
+#else
+#if (SPIBSC_BUS_MODE == SPIBSC_SDR_TRANS)
+    spibsccfg->udef_cmd = SFLASHCMD_BYTE_READ; /* ECH Command */
+#else
+    spibsccfg->udef_cmd = SFLASHCMD_BYTE_READ_DTR; /* ECH Command */
+#endif
+#endif
+
+    /* address width */
+    spibsccfg->udef_addr_width = SPIBSC_1BIT;
+
+    /* optional data */
+    spibsccfg->udef_opd_enable = SPIBSC_OUTPUT_DISABLE;
+
+    /* option data bus width */
+    spibsccfg->udef_opd_width = SPIBSC_1BIT;
+
+    /* dummy cycle number */
+    spibsccfg->udef_dmycyc_num = SPIBSC_DUMMY_8CYC;
+    spibsccfg->udef_dmycyc_enable = SPIBSC_DUMMY_CYC_ENABLE;
+
+    /* data bit width */
+    spibsccfg->udef_data_width = SPIBSC_1BIT;
+
+#elif (SPIBSC_BUS_WITDH == 4)
+    /* command */
+#if (SPIBSC_OUTPUT_ADDR == SPIBSC_OUTPUT_ADDR_32)
+#if (SPIBSC_BUS_MODE == SPIBSC_SDR_TRANS)
+    spibsccfg->udef_cmd = SFLASHCMD_QUAD_IO_READ_4B; /* ECH Command */
+#else
+    spibsccfg->udef_cmd = SFLASHCMD_QUAD_IO_READ_4B_DTR; /* ECH Command */
+#endif
+#else
+#if (SPIBSC_BUS_MODE == SPIBSC_SDR_TRANS)
+    spibsccfg->udef_cmd = SFLASHCMD_QUAD_IO_READ; /* ECH Command */
+#else
+    spibsccfg->udef_cmd = SFLASHCMD_QUAD_IO_READ_DTR; /* ECH Command */
+#endif
+#endif
+
+    /* address width */
+    spibsccfg->udef_addr_width = SPIBSC_4BIT;
+
+    /* optional data */
+    spibsccfg->udef_opd_enable = SPIBSC_OUTPUT_OPD_32;
+
+    /* option data bus width */
+    spibsccfg->udef_opd_width = SPIBSC_4BIT;
+
+    /* dummy cycle number */
+    spibsccfg->udef_dmycyc_num = SPIBSC_DUMMY_4CYC;
+    spibsccfg->udef_dmycyc_enable = SPIBSC_DUMMY_CYC_ENABLE;
+
+    if (SPIBSC_BUS_MODE == SPIBSC_DDR_TRANS)
+    {
+        spibsccfg->udef_dmycyc_num = SPIBSC_DUMMY_6CYC;
+    }
+
+    /* data bit width */
+    spibsccfg->udef_data_width = SPIBSC_4BIT;
+#endif
+
+    /* command width */
+    spibsccfg->udef_cmd_width = SPIBSC_1BIT;
+
+    /* optional data */
+    spibsccfg->udef_opd3 = 0x00;
+    spibsccfg->udef_opd2 = 0x00;
+    spibsccfg->udef_opd1 = 0x00;
+    spibsccfg->udef_opd0 = 0x00;
+
+    /* dummy cycle width */
+    spibsccfg->udef_dmycyc_width = SPIBSC_1BIT;
+
+    /* bitrate */
+    /*------------------------------------*/
+    /*    udef_spbr = 1 : 66.67Mbps       */
+    /*    udef_spbr = 2 : 33.33Mbps       */
+    /*    udef_spbr = 3 : 22.22Mbps       */
+    /*    udef_spbr = 4 : 16.67Mbps       */
+    /*    udef_spbr = 5 : 13.33Mbps       */
+    /*    udef_spbr = 6 : 11.11Mbps       */
+    /*------------------------------------*/
+    if (0 == ch_no)
+    {
+        spibsccfg->udef_spbr = 1;
+        spibsccfg->udef_brdv = 0;
+    }
+    else
+    {
+        spibsccfg->udef_spbr = 2;
+        spibsccfg->udef_brdv = 0;
+    }
+
+    spibsccfg->udef_addr_mode = SPIBSC_OUTPUT_ADDR;
+    spibsccfg->udef_speed_mode = SPIBSC_BUS_MODE;
+
+} /* End of function  Userdef_SPIBSC_Set_Config() */
+

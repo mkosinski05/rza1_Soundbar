@@ -1,0 +1,239 @@
+
+Project Name:  PekoeBoard_QSPI_LOADER
+.info file created successfully
+###############################################################################				 PROJECT CONVERSION###############################################################################
+Managed project created..
+The GNUARM-RZ toolchain has been superseded by GNUARM-NONE-EABI toolchain from e2 studio 3.1.x onwards. 
+The project 'PekoeBoard_QSPI_LOADER' is now imported with GNUARM-NONE-EABI toolchain.    
+
+Release  configuration is created
+Debug  configuration is created
+All project settings persisted..
+Project converted successfully.
+ACTIVE_CONFIGURATION=Debug
+-------------------------------------END----------------------------------------
+###############################################################################							EXCLUDE FILES FROM BUILD###############################################################################
+Release
+	File(s) exclude from build..
+		compiler_specific/asm/stack.S
+		compiler_specific/asm/initsct.S
+		RSK_Programmer_QSPI_Boot_Reset
+Debug
+	File(s) exclude from build..
+		compiler_specific/asm/stack.S
+		compiler_specific/asm/initsct.S
+		RSK_Programmer_QSPI_Boot_Reset
+-------------------------------------END----------------------------------------
+###############################################################################						 ARM-NONE OPTION SETTINGS###############################################################################
+Release
+	Library Generator
+		stdlib.h : Performs C program standard processing such as storage area management
+			true
+		string.h : Performs string comparison, copying 
+			true
+		Library type
+			Project-Built
+		Enable values to be clobbered by function calls(-fcaller-saves)
+			false
+		Allow mismatched types in conditional expressions(-fcond-mismatch)
+			false
+		Place each function into its own section in the output file(-ffunction-sections)
+			false
+		Don't store floating point variables in registers(-ffloat-store)
+			false
+		Violate ANSI or IEEE rules in order to optimise for speed(-ffast-math)
+			false
+		Perform a number of minor optimisations(-fexpensive-optimizations)
+			false
+		Exploit slots available after delayed branch instructions(-fdelayed-branch)
+			false
+		Causes CSE to follow conditional jumps(-fcse-skip-blocks)
+			false
+		In common subexpression elimination(-fcse-follow-jumps)
+			false
+		Enable all
+			false
+		Ignore 'inline' keyword(-fno-inline)
+			false
+		Do not put function addresses in registers(-fno-function-cse)
+			false
+		Pop the args to each function call as soon as it returns(-fno-defer-pop)
+			false
+		Output a separate run-time callable version of functions(-fkeep-inline-functions)
+			false
+		Integrate all simple functions into their callers(-finline-functions)
+			false
+		Place each data into its own section in the output file(-fdata-sections)
+			false
+		Re-run subexpression elimination after loop optimisation(-frerun-cse-after-loop)
+			false
+		Instrument arcs during compilation(-fprofile-arcs)
+			false
+		Don't keep unneeded function frame pointers(-fomit-frame-pointer)
+			false
+		Disable any machine-specific peephole optimisations(-fno-peephole)
+			false
+		Select library
+			Optimized
+		Mode
+			Build library (only when options change)
+		User defined assembler options
+
+		Optimization type
+			Code size optimization
+		Perform some loop and variable optimisations(-fstrength-reduce)
+			false
+		Let the type char be unsigned(-funsigned-char)
+			false
+		User defined compiler options
+
+		Perform thread jump optimisations(-fthread-jumps)
+			false
+		Create data files for the gcov code-coverage utility(-ftest-coverage)
+			false
+		Reorder instructions to eliminate execution stalls(-fschedule-insns)
+			false
+		Let the type char be signed(-fsigned-char)
+			false
+		Additional pass of instruction scheduling(-fschedule-insns2)
+			false
+		Perform the loop unrolling optimisation on all loops(-funroll-all-loops)
+			false
+		ctype.h : Handles and checks characters
+			true
+		Use unsigned bitfields(-funsigned-bitfields)
+			false
+		Perform the loop unrolling optimisation(-funroll-loops)
+			false
+		math.h : Performs numeric calculations such as trigonometric functions
+			true
+		Do not predefine any nonstandard macros(-undef)
+			false
+		Support all ANSI standard C programs(-ansi)
+			false
+		Attempt to support some aspects of traditional C compilers(-traditional)
+			false
+		Attempt to support aspects of traditional C preprocessors(-traditional-cpp)
+			false
+		Support ANSI C trigraphs(-trigraphs)
+			false
+		stdio.h : Performs input/output handling
+			true
+	Compiler
+		Interworking (-mthumb-interwork)
+			false
+		User defined options
+			-std=c99
+		Debug Format
+			Native
+		Convert all warnings to errors (-Werror)    
+			false
+		Target FPU (-mfpu)
+			vfp
+		Issue Warning for certain prototype conversions(-Wconversion)
+			true
+		Support all ANSI standard C programs(-ansi)
+			false
+		Print extra warning messages(-Wextra)
+			false
+		Enable unaligned word and halfword accesses to packed data
+			false
+		Only check code for syntax errors(-fsyntax-only)
+			false
+		Be strict and warnings are treated as errors(-pedantic-errors)
+			false
+		Be strict about errors and warnings according to ANSI C(-pedantic)
+			false
+		CPU type
+			cortex-a9
+		Endian
+			Little-endian
+		Debug Level
+			None
+		Optimization Level
+			Code size optimization
+		Print compilation commands and version numbers(-v)
+			false
+		Run only the C preprocessor(-E)
+			false
+		Floating-point ABI (-mfloat-abi=name)
+			Soft
+		Macro Defines
+			RELEASE
+		Don't search standard system directories for header files(-nostdinc)
+			false
+		Inhibit all warning messages
+			false
+		Standard Warnings
+			Select options
+		Instruction Set
+			ARM
+		Include file directories
+			"${TCINSTALL}\arm-rz-eabi\include"
+			"${TCINSTALL}\bin\newlib\libc\sys\arm"
+			"${workspace_loc:/${ProjName}/inc}"
+			"${workspace_loc:/${ProjName}/compiler_specific/inc}"
+			"${workspace_loc:/${ProjName}/inc/iobitmasks}"
+			"${workspace_loc:/${ProjName}/inc/iodefines}"
+	Assembler
+		Interworking (-mthumb-interwork)
+			false
+		Include file directories
+
+		User defined options
+
+		Debug Format
+			None
+		Target FPU (-mfpu)
+			vfp
+		Instruction Set
+			ARM
+		Suppress warning messages(-W)
+			false
+		CPU type
+			cortex-a9
+		Endian
+			Little-endian
+		Floating-point ABI (-mfloat-abi=name)
+			Soft
+	Linker
+		File
+			"C:/work/RZ/Test_Projects/KS_Pekoe_Board_Sample/PekoeBoard_QSPI_LOADER/compiler_specific/PekoeQspiBootStandalone.ld"
+		Archive (library) files
+			
+		Additional input files
+
+		User defined options
+			-e"start"
+			-EL
+			--relax
+			--warn-unresolved-symbols
+			--error-unresolved-symbols
+			--start-group -lm -lc -lgcc --end-group
+		Omit debugger symbol information from the output file(-S)
+			true
+		Archive search directories
+			"${TCINSTALL}\arm-rz-eabi\lib\gcc\arm-rz-eabi\4.7-GNUARM-RZ_v13.01"
+			"${TCINSTALL}\arm-rz-eabi\lib"
+			"${CWD}"
+			"${TCINSTALL}\arm-rz-eabi\lib"
+			"${TCINSTALL}\lib\gcc\arm-rz-eabi\4.7-GNUARM-RZ_v13.01"
+		Command file overide
+			None
+		Generate MAP file(-Map)
+			true
+		Warn when two symbols are combined(-warn-common)
+			true
+		Generate relocatable output(-r)
+			false
+		Omit all symbol information from the output file(-s)
+			true
+Debug
+	Library Generator
+	Compiler
+	Assembler
+		User defined options
+
+	Linker
+-------------------------------------END----------------------------------------
+********Conversion succeeded********
