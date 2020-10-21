@@ -37,7 +37,7 @@
  Includes   <System Includes> , "Project Includes"
  ******************************************************************************/
 #include "r_gpio_if.h"
-
+#include "gpio_addrdefine.h"
 /******************************************************************************
  Typedef definitions
  ******************************************************************************/ 
@@ -68,6 +68,20 @@ void gpio_init(PinName pin ) {
 	rza_io_reg_write_16( PMC(n),  0, shift, bitmask);
 }
 
+void gpios_init(uint8_t port, uint16_t pins, PinDirection mode) {
+
+	uint16_t bitmask = pins & pins;
+
+	/* Set to Port Mode */
+	rza_io_reg_write_16( PMC(port),  bitmask, 0, bitmask);
+
+	if ( mode == PIN_INPUT ) {
+		rza_io_reg_write_16( PM(port),  bitmask, 0, bitmask);
+	} else {
+		rza_io_reg_write_16( PM(port),  ~bitmask, 0, bitmask);
+	}
+
+}
 /** Set the input pin mode
  *
  *  @param pin   The pin name
@@ -95,9 +109,13 @@ void gpio_dir(PinName pin, PinDirection direction){
 			rza_io_reg_write_16( PIBC(n),  1, shift, bitmask);
 			break;
 		case PIN_OUTPUT :
+#if 0
 			rza_io_reg_write_32( PMSR(n),  1, shift+16, bitmask<<16);
 			rza_io_reg_write_32( PMSR(n),  0, shift, bitmask);
 			rza_io_reg_write_16( PIBC(n),  0, shift, bitmask);
+#else
+			rza_io_reg_write_16( PM(n),  0, shift, bitmask);
+#endif
 			break;
 		default :
 			break;
@@ -112,14 +130,26 @@ void gpio_dir(PinName pin, PinDirection direction){
  */
 void gpio_write(PinName pin, int value){
 	int n = pin >> 4;
-	int shift = pin;
+	int shift = pin & 0x00F;
 	int bitmask = 1 << shift;
 
 	/* Set to Port Mode */
+#if 0
 	rza_io_reg_write_32( PSR(n),  1, shift+16, bitmask<<16);
 	rza_io_reg_write_32( PSR(n),  (value & 0x0001), shift, bitmask);
+#else
+	rza_io_reg_write_16( PORT(n),  value, shift, bitmask);
+#endif
 }
 
+void gpios_write(uint8_t port, uint16_t pins, int value) {
+	if ( value == 0 ) {
+		rza_io_reg_write_16( PORT(port),  ~pins, 0, pins);
+	} else {
+		rza_io_reg_write_16( PORT(port),  pins, 0, pins);
+	}
+
+}
 /** Read the input value
  *
  * @param obj The GPIO object

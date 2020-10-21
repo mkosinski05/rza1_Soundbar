@@ -38,7 +38,7 @@
  Includes   <System Includes> , "Project Includes"
  ******************************************************************************/
 #include "PinNames.h"
-
+#include "r_typedefs.h"
 /******************************************************************************
  Typedef definitions
  ******************************************************************************/
@@ -65,7 +65,7 @@
  * @param pin The GPIO pin to initialize
  */
 void gpio_init(PinName pin);
-
+void gpios_init(uint8_t port, uint16_t pins, PinDirection mode);
 /** Set the input pin mode
  *
  * @param obj  The GPIO object
@@ -86,7 +86,7 @@ void gpio_dir(PinName pin, PinDirection direction);
  * @param value The value to be set
  */
 void gpio_write(PinName pin, int value);
-
+void gpios_write(uint8_t port, uint16_t pins, int value);
 /** Read the input value
  *
  * @param obj The GPIO object
