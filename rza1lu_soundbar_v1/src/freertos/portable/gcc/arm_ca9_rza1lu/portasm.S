@@ -54,11 +54,7 @@
 	.cpu cortex-a9
 	.fpu vfpv3
 
-    .equ    INTC_ICCIAR_MASK  , 0x3FF
-    .equ    INTC_ICCIAR_ADDR  , 0xE820200C
-    .equ    INTC_ICCEOIR_ADDR , 0xE8202010
-    .equ    INTC_ICCHPIR_ADDR , 0xE8202018
-    .equ    INTC_ICDIPR0_ADDR , 0xE8201400
+
 
 .macro portSAVE_CONTEXT
 
@@ -141,62 +137,7 @@
 	.endm
 
 
-.align 4
-read_intc_icciar_addr:
-	PUSH	{r1, r12}
-	PUSH	{r3-r4, r12}
 
-    /*; ++REE_SS Addressing ARM Errata 801120 */
-    /*; Perform a dummy read to - ensure subsequent ICCIAR data */
-    /*; will be correct */
-    LDR     r2, =INTC_ICCHPIR_ADDR
-    LDR     r2, [r2]
-    LDR     r0, [r2]
-
-    /*; Attempt to activate interrupt and get its ID */
-    /*; Load in to R3 - if valid it will be used later as ICCIAR */
-    LDR     r2, =INTC_ICCIAR_ADDR
-    LDR     r3, [r2]
-
-    /*; Extract the interrupt ID (removing the SGI source CPU ID) */
-    LDR     r1, =INTC_ICCIAR_MASK
-    AND     r3, r3, r1
-
-    /*; Read data of 0x0 (SGI ID0 from CPU0) is possibly affected by 733075 */
-    CMP     r3, #0
-    BEQ     errata_733075_workaround
-
-    /*; Interrupt IDs 0x3FE and 0x3FF are also possibly affected */
-    LDR     r1, =1022
-    CMP     r3, r1
-    BGE     errata_733075_workaround
-
-    B       post_733075_workaround
-
-errata_733075_workaround:
-    /*; Perform a read from ulICDIPR0 and write value back */
-    /*; It is sufficient to write the value that is already in the register. */
-    /*; You can obtain the value to be written to the ICDIPR0 register by */
-    /*; reading from it, or through other means" */
-    LDR     r2, =INTC_ICDIPR0_ADDR
-    LDR     r0, [r2]
-    STR     r0, [r2]
-    DSB
-
-    LDR     r2, =INTC_ICCHPIR_ADDR
-    LDR     r2, [r2]
-    LDR     r0, [r2]
-
-    /*; Attempt to activate interrupt and get its ID */
-    /*; Load in to R3 - if valid it will be used later as ICCIAR */
-    LDR     r2, =INTC_ICCIAR_ADDR
-    LDR     r3, [r2]
-
-post_733075_workaround:
-    MOV     r0, r3
-	POP		{r3-r4, r12}
-	POP		{r1, r12}
-	B       icciar_read_complete
 
 /******************************************************************************
  * SVC handler is used to start the scheduler.
@@ -209,6 +150,7 @@ FreeRTOS_SWI_Handler:
 	LDR R0, vTaskSwitchContextConst
 	BLX	R0
 	portRESTORE_CONTEXT
+
 
 /******************************************************************************
  * vPortRestoreTaskContext is used to start the scheduler.
@@ -244,8 +186,11 @@ FreeRTOS_IRQ_Handler:
 	ADD		r4, r1, #1
 	STR		r4, [r3]
 
-    B		read_intc_icciar_addr
-icciar_read_complete:
+	/* Read value from the interrupt acknowledge register, which is stored in r0
+	for future parameter and interrupt clearing use. */
+	LDR 	r2, ulICCIARConst
+	LDR		r2, [r2]
+	LDR		r0, [r2]
 
 	/* Ensure bit 2 of the stack pointer is clear.  r2 holds the bit 2 value for
 	future use.  Guard against the start of the stack not being 8-byte aligned */
@@ -255,7 +200,6 @@ icciar_read_complete:
 
 	/* Call the interrupt handler.  r4 pushed to maintain alignment. */
 	PUSH	{r0-r4, lr}
-
 	LDR		r1, vApplicationIRQHandlerConst
 	BLX		r1
 	POP		{r0-r4, lr}

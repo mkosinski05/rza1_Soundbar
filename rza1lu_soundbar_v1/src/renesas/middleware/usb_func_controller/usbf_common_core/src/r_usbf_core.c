@@ -1,5 +1,5 @@
 /******************************************************************************
-* DISCLAIMER
+* DISCLAIMER                                                                      
 * This software is supplied by Renesas Electronics Corporation and is only
 * intended for use with Renesas products. No other uses are authorized.
 * This software is owned by Renesas Electronics Corporation and is protected under
@@ -15,7 +15,7 @@
 * FOR ANY REASON RELATED TO THIS SOFTWARE, EVEN IF RENESAS OR ITS
 * AFFILIATES HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 * Renesas reserves the right, without notice, to make changes to this
-* software and to discontinue the availability of this software.
+* software and to discontinue the availability of this software.  
 * By using this software, you agree to the additional terms and
 * conditions found by accessing the following link:
 * http://www.renesas.com/disclaimer
@@ -31,7 +31,7 @@
 * Description     : The USB core sits above the HAL in the USB stack.
 *                   Initialises the HAL.
 *                   Handles standard setup packets.
-*
+* 
 * NOTE            : This only supports 1 language ID and that is currently
 *                   English. defined in static string_desc_language_ids
 ******************************************************************************/
@@ -142,7 +142,7 @@ PEVENT          g_usb_devices_events[R_USB_SUPPORTED_CHANNELS];
 *                  _fpcb_setupPacket: Function that will be called if
 *                                a setup packet can't be handled by this layer.
 *                    (Usually a Vender or Class specific GetDescriptor request)
-*                  _fpCBControlOut: Function that will be called when
+*                  _fpCBControlOut: Function that will be called when 
 *                        a control data out occurs for a setup packet
 *                        not handled by this layer.
 *                  _fpCBCable: Function that will be called when USB cable is
@@ -165,7 +165,7 @@ usb_err_t R_USBF_CoreInit(volatile st_usb_object_t *_pchannel,
                      CB_ERROR _fpCBError)
 {
     _pchannel->err = USB_ERR_OK;
-
+    
     if(0 == _pchannel->descriptors_initialised)
     {
         /*Update passed in descriptors*/
@@ -196,7 +196,7 @@ usb_err_t R_USBF_CoreInit(volatile st_usb_object_t *_pchannel,
     /*Store passed in callback*/
     _pchannel->fp_cbc_setup_packet = _fpcb_setupPacket;
     _pchannel->fp_cb_control_out   = _fpCBControlOut;
-
+    
     /*keep track of  current USB configuration*/
     _pchannel->pcurr_usb_config = _pchannel->descriptors.config.puc_data;
 
@@ -240,25 +240,25 @@ static void cb_setup(volatile void *__pchannel, const uint8_t(*_pSetupPacket)[US
     _pchannel->err = USB_ERR_OK;
 
     DEBUG_MSG_HIGH( ("USBCORE: SetupPacket received\r\n"));
-
+    
     /*Populate the Setup Packet structure g_oSetupPacket */
     populate_setup_packet(_pchannel, _pSetupPacket);
-
+    
     /*Process this setup packet*/
     _pchannel->err = process_setup_packet(_pchannel, (uint16_t *)(&_pchannel->cb_setup_num_bytes), (uint8_t **)(&_pchannel->pcdsetup_buffer));
-
+                            
     if(USB_ERR_UNKNOWN_REQUEST == _pchannel->err)
     {
         DEBUG_MSG_LOW( ("USBCORE: Passing SetupPacket up the stack.\r\n"));
-
+        
         /*Can't handle this setup packet*/
         /*Let upper layer try - call registered callback*/
-        _pchannel->err = _pchannel->fp_cbc_setup_packet((void *)_pchannel,
+        _pchannel->err = _pchannel->fp_cbc_setup_packet((void *)_pchannel, 
                                                         (setup_packet_t *)(&_pchannel->setup_packet),
-                                                        (uint16_t *)(&_pchannel->cb_setup_num_bytes),
+                                                        (uint16_t *)(&_pchannel->cb_setup_num_bytes), 
                                                         (uint8_t **)(&_pchannel->pcdsetup_buffer));
     }
-
+    
     if(USB_ERR_OK == _pchannel->err)
     {
         /*Is there a data stage?*/
@@ -268,14 +268,14 @@ static void cb_setup(volatile void *__pchannel, const uint8_t(*_pSetupPacket)[US
             if(_pchannel->setup_packet.bm_request.bit_val.d7)
             {
                 DEBUG_MSG_MID(("USBCORE: SetupPacket DATA IN\r\n"));
-
+                
                 /*IN*/
                 /*Don't send more data than host has requested*/
                 if(_pchannel->cb_setup_num_bytes > _pchannel->setup_packet.w_length)
                 {
                     _pchannel->cb_setup_num_bytes = _pchannel->setup_packet.w_length;
                 }
-
+            
                 /*Send Data*/
                 R_USB_HalControlIn(_pchannel, _pchannel->cb_setup_num_bytes, _pchannel->pcdsetup_buffer);
             }
@@ -283,9 +283,9 @@ static void cb_setup(volatile void *__pchannel, const uint8_t(*_pSetupPacket)[US
             {
                 /*OUT*/
                 DEBUG_MSG_MID(("USBCORE: SetupPacket DATA OUT\r\n"));
-
+                
                 assert(_pchannel->setup_packet.w_length == _pchannel->cb_setup_num_bytes);
-
+                
                 R_USB_HalControlOut(_pchannel, _pchannel->cb_setup_num_bytes, _pchannel->pcdsetup_buffer, _pchannel->fp_cb_control_out);
             }
         }
@@ -293,14 +293,14 @@ static void cb_setup(volatile void *__pchannel, const uint8_t(*_pSetupPacket)[US
         {
             /*No data stage - just need to send ACK*/
             DEBUG_MSG_MID(("USBCORE: SetupPacket - No data stage.\r\n"));
-
+            
             R_USB_HalControlAck(_pchannel);
         }
     }
     else
     {
         DEBUG_MSG_MID(("USBCORE: SetupPacket - stall.\r\n"));
-
+        
         /*Something wrong with this control pipe so stall it.*/
         R_USB_HalControlStall(_pchannel);
     }
@@ -313,20 +313,20 @@ End of function cb_setup
 * Function Name   :   process_setup_packet
 * Description     :   Looks to see if this is a standard setup packet
 *                     that this layer can possibly deal with.
-*
+*                  
 * Argument        :    _pNumBytes: (OUT)If this layer can handle this then
 *                          this will be set with the size of the data.
 *                          (If there is no data stage then this will be set to zero)
 *                     _ppBuffer: (OUT)If this layer can handle this then
 *                          this will be set to point to the data(IN) or a buffer(OUT).
 *                          (If there is a data stage for this packet).
-* Return value    :    None
+* Return value    :    None 
 ******************************************************************************/
 
 static usb_err_t process_setup_packet(volatile st_usb_object_t *_pchannel, uint16_t* _pNumBytes, uint8_t** _ppBuffer)
 {
     _pchannel->err = USB_ERR_OK;
-
+    
     switch(_pchannel->setup_packet.bm_request.bit_val.d65)
     {
         case REQUEST_STANDARD:
@@ -341,12 +341,12 @@ static usb_err_t process_setup_packet(volatile st_usb_object_t *_pchannel, uint1
         default:
         {
             DEBUG_MSG_LOW( ("USBCORE: Core can't process this setup packet: %d\r\n", _pchannel->setup_packet.bm_request.bit_val.d65));
-
+        
             /*Unsupported request*/
             _pchannel->err = USB_ERR_UNKNOWN_REQUEST;
         }
     }
-
+    
     return _pchannel->err;
 }
 /******************************************************************************
@@ -409,7 +409,7 @@ static usb_err_t process_standard_setup_packet(volatile st_usb_object_t *_pchann
         case GET_INTERFACE:
         {
             *_pNumBytes = 0;
-
+            
             _pchannel->usb_status = 0;
             *_ppBuffer = (uint8_t*)&_pchannel->usb_status;
             break;
@@ -419,7 +419,7 @@ static usb_err_t process_standard_setup_packet(volatile st_usb_object_t *_pchann
             if((0 == _pchannel->setup_packet.w_index) || (1 == _pchannel->setup_packet.w_index))
             {
                 /* Do Nothing */
-                ;
+            	;
             }
             else
             {
@@ -444,22 +444,22 @@ End of function process_standard_setup_packet
 * Function Name   :   process_set_feature
 * Description     :   Process a GET_DESCRIPTOR setup packet.
 *                     Supports Device, Configuration and String requests.
-*
+* 
 * Argument        :    _pNumBytes: (OUT)If this layer can handle this then
 *                          this will be set with the size of the descriptor.
 *                     _ppDescriptor: (OUT)If this layer can handle this then
 *                          this will be set to point to the descriptor.
-*
-* Return value    :    Error code - USB_ERR_OK if supported.
+*             
+* Return value    :    Error code - USB_ERR_OK if supported. 
 ******************************************************************************/
 static usb_err_t process_set_feature(volatile st_usb_object_t *_pchannel)
 {
     _pchannel->err = USB_ERR_OK;
 
     DEBUG_MSG_HIGH( ("USBCORE: SET_FEATURE\r\n"));
-
+    
     if (((uint8_t)(RECIPIENT_END_POINT == _pchannel->setup_packet.bm_request.bit_val.d40))
-        &&
+        && 
         (ENDPOINT_HALT == _pchannel->setup_packet.w_value))
     {
         switch((uint8_t)(_pchannel->setup_packet.w_index & 0x0F))
@@ -511,13 +511,13 @@ End of function process_set_feature
 * Function Name   :   process_clear_feature
 * Description     :   Process a GET_DESCRIPTOR setup packet.
 *                     Supports Device, Configuration and String requests.
-*
+* 
 * Argument        :    _pNumBytes: (OUT)If this layer can handle this then
 *                          this will be set with the size of the descriptor.
 *                     _ppDescriptor: (OUT)If this layer can handle this then
 *                          this will be set to point to the descriptor.
-*
-* Return value    :    Error code - USB_ERR_OK if supported.
+*             
+* Return value    :    Error code - USB_ERR_OK if supported. 
 ******************************************************************************/
 static usb_err_t process_clear_feature(volatile st_usb_object_t *_pchannel)
 {
@@ -577,12 +577,12 @@ End of function process_clear_feature
 * Function Name   :   process_get_status
 * Description     :   Process a GET_DESCRIPTOR setup packet.
 *                     Supports Device, Configuration and String requests.
-*
+* 
 * Argument        :   _pNumBytes: (OUT)wLength = Two
 *                     _ppStatus: (OUT)The data returned is the current
 *                          status of the specified recipient.
-*
-* Return value    :    Error code - USB_ERR_OK if supported.
+*             
+* Return value    :    Error code - USB_ERR_OK if supported. 
 ******************************************************************************/
 static usb_err_t process_get_status(volatile st_usb_object_t *_pchannel,
                                   uint16_t* _pNumBytes,
@@ -613,7 +613,7 @@ static usb_err_t process_get_status(volatile st_usb_object_t *_pchannel,
         {
             _pchannel->endpoint_status = R_USB_HalIsEndpointStalled(_pchannel, (_pchannel->setup_packet.w_index & 0x0F));
             _pchannel->endpoint_status = (uint16_t)((uint16_t) (((uint16_t) (_pchannel->endpoint_status >> 8)) & 0xff)
-                                                  + (uint16_t) (((uint16_t) (_pchannel->endpoint_status << 8)) & 0xff00));
+            		                               + (uint16_t) (((uint16_t)(_pchannel->endpoint_status << 8)) & 0xff00));
             *_ppStatus = (uint8_t*)&_pchannel->endpoint_status;
             break;
         }
@@ -636,13 +636,13 @@ End of function process_get_status
 * Function Name   :   process_get_descriptor
 * Description     :   Process a GET_DESCRIPTOR setup packet.
 *                     Supports Device, Configuration and String requests.
-*
+* 
 * Argument        :    _pNumBytes: (OUT)If this layer can handle this then
 *                          this will be set with the size of the descriptor.
 *                     _ppDescriptor: (OUT)If this layer can handle this then
 *                          this will be set to point to the descriptor.
-*
-* Return value    :    Error code - USB_ERR_OK if supported.
+*             
+* Return value    :    Error code - USB_ERR_OK if supported. 
 ******************************************************************************/
 
 static usb_err_t process_get_descriptor(volatile st_usb_object_t *_pchannel,
@@ -650,11 +650,11 @@ static usb_err_t process_get_descriptor(volatile st_usb_object_t *_pchannel,
                                       const uint8_t** _ppDescriptor)
 {
     _pchannel->err = USB_ERR_OK;
-
+    
     /*The w_value field of the setup packet,
     specifies the descriptor type in the high byte
     and the descriptor index in the low byte.*/
-
+    
     switch((uint8_t)((_pchannel->setup_packet.w_value >> 8) & 0x00FF))
     {
         case ROOT_DEVICE:
@@ -689,12 +689,12 @@ static usb_err_t process_get_descriptor(volatile st_usb_object_t *_pchannel,
         default:
         {
             /*Unknown descriptor request*/
-
+            
             /*Note1: May get a DEVICE_QUALIFIER request - but OK not to handle
             it as we don't support different configurations for high and full speed*/
-
+            
             /*Note2: HID uses this standard GET_DESCRIPTOR to get
-            class specific descriptors.*/
+            class specific descriptors.*/            
             *_pNumBytes = 0;
             *_ppDescriptor = NULL;
             _pchannel->err = USB_ERR_UNKNOWN_REQUEST;
@@ -710,13 +710,13 @@ End of function process_get_descriptor
 * Function Name   :    process_get_configuration
 * Description     :    Process a GET_DESCRIPTOR setup packet.
 *                      Supports Device, Configuration and String requests.
-*
+* 
 * Argument        :    _pNumBytes: (OUT)If this layer can handle this then
 *                          this will be set with the size of the descriptor.
 *                      _ppDescriptor: (OUT)If this layer can handle this then
 *                          this will be set to point to the descriptor.
-*
-* Return value    :    Error code - USB_ERR_OK if supported.
+*             
+* Return value    :    Error code - USB_ERR_OK if supported. 
 ******************************************************************************/
 
 static usb_err_t process_get_configuration(volatile st_usb_object_t *_pchannel,
@@ -724,7 +724,7 @@ static usb_err_t process_get_configuration(volatile st_usb_object_t *_pchannel,
                                          const uint8_t** _ppConfigValue)
 {
     _pchannel->err = USB_ERR_OK;
-
+    
     DEBUG_MSG_HIGH( ("USBCORE: GET_CONFIGURATION\r\n"));
 
     _pchannel->device_state = 0;
@@ -769,13 +769,13 @@ End of function process_get_configuration
 *                     Handles LanguageID, Manufacturer, Product
 *                     and Serial Number requests.
 *                     Note: Only supports 1 language ID.
-*
+*                 
 * Argument        :   _pNumBytes: (OUT)If this layer can handle this then
 *                          this will be set with the size of the descriptor.
 *                     _ppDescriptor: (OUT)If this layer can handle this then
 *                          this will be set to point to the descriptor.
-*
-* Return value    :    Error Code - USB_ERR_OK if supported.
+*                  
+* Return value    :    Error Code - USB_ERR_OK if supported. 
 ******************************************************************************/
 static usb_err_t process_get_descriptor_string(volatile st_usb_object_t *_pchannel,
                                             uint16_t* _pNumBytes,
@@ -802,7 +802,7 @@ static usb_err_t process_get_descriptor_string(volatile st_usb_object_t *_pchann
                 case STRING_iMANUFACTURER:
                 {
                     DEBUG_MSG_MID(("String Manufacturer\r\n"));
-
+                
                     *_pNumBytes = _pchannel->descriptors.string_manufacturer.length;
                     *_ppDescriptor = _pchannel->descriptors.string_manufacturer.puc_data;
                     break;
@@ -810,7 +810,7 @@ static usb_err_t process_get_descriptor_string(volatile st_usb_object_t *_pchann
                 case STRING_iPRODUCT:
                 {
                     DEBUG_MSG_MID(("String Product\r\n"));
-
+                
                     *_pNumBytes = _pchannel->descriptors.string_product.length;
                     *_ppDescriptor = _pchannel->descriptors.string_product.puc_data;
                     break;
@@ -825,7 +825,7 @@ static usb_err_t process_get_descriptor_string(volatile st_usb_object_t *_pchann
                 {
                     /*Unknown descriptor request*/
                     DEBUG_MSG_MID(("Error:- Unknown String\r\n"));
-
+                    
                     *_pNumBytes = 0;
                     *_ppDescriptor = NULL;
                     _pchannel->err = USB_ERR_UNKNOWN_REQUEST;
@@ -850,7 +850,7 @@ static usb_err_t process_get_descriptor_string(volatile st_usb_object_t *_pchann
             _pchannel->err = USB_ERR_UNKNOWN_REQUEST;
         }
     }
-
+    
     return _pchannel->err;
 }
 /******************************************************************************

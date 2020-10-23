@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-* DISCLAIMER
+* DISCLAIMER                                                                      
 * This software is supplied by Renesas Electronics Corporation and is only
 * intended for use with Renesas products. No other uses are authorized.
 * This software is owned by Renesas Electronics Corporation and is protected under
@@ -15,7 +15,7 @@
 * FOR ANY REASON RELATED TO THIS SOFTWARE, EVEN IF RENESAS OR ITS
 * AFFILIATES HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 * Renesas reserves the right, without notice, to make changes to this
-* software and to discontinue the availability of this software.
+* software and to discontinue the availability of this software.  
 * By using this software, you agree to the additional terms and
 * conditions found by accessing the following link:
 * http://www.renesas.com/disclaimer
@@ -30,7 +30,7 @@
 * H/W Platform    : RSK+RZA1H
 * Description     : Human Interface Device (HID) USB Class.
 *                   Supports an IN and an OUT HID Report.
-*
+* 
 *                   NOTE: This module does not have any knowledge of the
 *                   contents of the reports.
 ******************************************************************************/
@@ -47,8 +47,8 @@ System Includes
 /***********************************************************************************
 User Includes
 ***********************************************************************************/
-/*    Following header file provides definition common to Upper and Low Level USB
- *    driver. */
+/*    Following header file provides definition common to Upper and Low Level USB 
+    driver. */
 #include "usb_common.h"
 /* USB Firmware Header File */
 #include "r_usb_hal.h"
@@ -246,12 +246,12 @@ static usb_err_t process_standard_setup_packet(volatile  st_usb_object_t *_pchan
                                             setup_packet_t* _pSetupPacket,
                                             uint16_t* _pNumBytes,
                                              uint8_t** _ppBuffer);
-
+                                            
 static usb_err_t process_get_descriptor(volatile  st_usb_object_t *_pchannel,
                                       setup_packet_t* _pSetupPacket,
                                         uint16_t* _pNumBytes,
                                          const uint8_t** _ppBuffer);
-
+                                            
 static usb_err_t process_class_setup_packet(volatile  st_usb_object_t *_pchannel,
                                         setup_packet_t* _pSetupPacket,
                                         uint16_t* _pNumBytes,
@@ -262,7 +262,7 @@ static usb_err_t cbunhandled_setup_packet(volatile  st_usb_object_t *_pchannel,
                                         setup_packet_t* _pSetupPacket,
                                         uint16_t* _pNumBytes,
                                         uint8_t** _ppBuffer);
-
+                                        
 static void cbdone_control_out(volatile  st_usb_object_t *_pchannel, usb_err_t _err, uint32_t _NumBytes);
 
 static void cdcable(volatile  st_usb_object_t *_pchannel, BOOL _bConnected);
@@ -308,12 +308,12 @@ End of function initialise_data
 * Description    :    Called from USB core when it can't deal with a setup
 *                      packet.
 *                     This is a function of type CB_SETUP_PACKET.
-*
+*                 
 * Argument        :    _pSetupPacket - Setup packet.
 *                     _pNumBytes - (OUT)Buffer size.
 *                     _ppBuffer - (OUT)Buffer.
-*
-* Return value    :    Error code
+*                     
+* Return value    :    Error code 
 ****************************************************************************/
 static usb_err_t cbunhandled_setup_packet(volatile  st_usb_object_t *_pchannel,
                                         setup_packet_t* _pSetupPacket,
@@ -321,7 +321,7 @@ static usb_err_t cbunhandled_setup_packet(volatile  st_usb_object_t *_pchannel,
                                         uint8_t** _ppBuffer)
 {
     _pchannel->err = USB_ERR_OK;
-
+    
     switch(_pSetupPacket->bm_request.bit_val.d65)
     {
         case REQUEST_STANDARD:
@@ -348,12 +348,12 @@ static usb_err_t cbunhandled_setup_packet(volatile  st_usb_object_t *_pchannel,
             _pchannel->err = USB_ERR_UNKNOWN_REQUEST;
         }
     }
-
+    
     return _pchannel->err;
 }
 /**********************************************************************************
 End of function cbunhandled_setup_packet
-***********************************************************************************/
+***********************************************************************************/   
 
 /***********************************************************************************
 * Function Name    :    process_standard_setup_packet
@@ -373,7 +373,7 @@ static usb_err_t process_standard_setup_packet(volatile  st_usb_object_t *_pchan
                                              uint8_t** _ppBuffer)
 {
     _pchannel->err = USB_ERR_OK;
-
+        
     switch(_pSetupPacket->b_request)
     {
         case GET_DESCRIPTOR:
@@ -382,7 +382,7 @@ static usb_err_t process_standard_setup_packet(volatile  st_usb_object_t *_pchan
                                        _pSetupPacket, _pNumBytes,
                                        (const uint8_t**)_ppBuffer);
             break;
-
+            
         }
         default:
         {
@@ -397,7 +397,7 @@ static usb_err_t process_standard_setup_packet(volatile  st_usb_object_t *_pchan
 }
 /**********************************************************************************
 End of function process_standard_setup_packet
-***********************************************************************************/
+***********************************************************************************/   
 
 /******************************************************************************
 * Function Name    :    process_get_descriptor
@@ -409,7 +409,7 @@ End of function process_standard_setup_packet
 *                     _ppBuffer: (OUT)If this  can handle this then
 *                                  this will be set to point to the data(IN)(Descriptor).
 *                                  (If there is a data stage for this packet).
-* Return value    :    Error Code
+* Return value    :    Error Code 
 ****************************************************************************/
 static usb_err_t process_get_descriptor(volatile  st_usb_object_t *_pchannel,
                                       setup_packet_t* _pSetupPacket,
@@ -417,7 +417,7 @@ static usb_err_t process_get_descriptor(volatile  st_usb_object_t *_pchannel,
                                       const uint8_t** _ppBuffer)
 {
     _pchannel->err = USB_ERR_OK;
-
+    
     /*USB Core handles normal Get Descriptor requests,
     so only need to support HID specific here.*/
     uint8_t descriptor_type = (uint8_t)((_pSetupPacket->w_value >> 8) & 0x00FF);
@@ -465,12 +465,12 @@ static usb_err_t process_get_descriptor(volatile  st_usb_object_t *_pchannel,
             _pchannel->err = USB_ERR_UNKNOWN_REQUEST;
         }
     }
-
+    
     return _pchannel->err;
 }
 /**********************************************************************************
 End of function process_get_descriptor
-***********************************************************************************/
+***********************************************************************************/   
 
 /***********************************************************************************
 * Function Name    :    process_class_setup_packet
@@ -482,7 +482,7 @@ End of function process_get_descriptor
 *                     _ppBuffer: (OUT)If this  can handle this then
 *                                  this will be set to point to the data(IN) or a buffer(OUT).
 *                                  (If there is a data stage for this packet).
-* Return value    :    Error Code
+* Return value    :    Error Code 
 ****************************************************************************/
 static usb_err_t process_class_setup_packet(volatile  st_usb_object_t *_pchannel,
                                          setup_packet_t* _pSetupPacket,
@@ -547,7 +547,7 @@ static usb_err_t process_class_setup_packet(volatile  st_usb_object_t *_pchannel
             _pchannel->err = USB_ERR_UNKNOWN_REQUEST;
         }
     }
-
+    
     return _pchannel->err;
 }
 /******************************************************************************
@@ -560,7 +560,7 @@ End of function process_class_setup_packet
 *                     setup packet handled in cbunhandled_setup_packet.
 * Argument        :    _err: Error Code
 *                     _NumBytes: Number of bytes received.
-* Return value    :    -
+* Return value    :    - 
 ****************************************************************************/
 static void cbdone_control_out(volatile  st_usb_object_t *_pchannel, usb_err_t _err, uint32_t _NumBytes)
 {
@@ -572,41 +572,41 @@ static void cbdone_control_out(volatile  st_usb_object_t *_pchannel, usb_err_t _
 
 /******************************************************************************
 End of function cbdone_control_out
-***********************************************************************************/
+***********************************************************************************/   
 
 /***********************************************************************************
 * Function Name    :    cbdone_interrupt_in
 * Description    :    A Control IN has completed in response to a
 *                     setup packet handled in cbunhandled_setup_packet.
 * Argument        :    _err: Error Code
-* Return value    :    -
+* Return value    :    - 
 ****************************************************************************/
 static void cbdone_interrupt_in(usb_err_t _err)
 {
     assert(USB_ERR_OK == _err);
 
     /*Nothing to do*/
-}
+} 
 /**********************************************************************************
 End of function cbdone_interrupt_in
-***********************************************************************************/
+***********************************************************************************/   
 
 /******************************************************************************
 * Function Name    :    cdcable
 * Description    :    Callback function called when the USB cable is
 *                     Connected/Disconnected.
 *                     Sets connected flag.
-*
+*                 
 * Argument        :    _bConnected: TRUE = Connected, FALSE = Disconnected.
-* Return value    :    -
+* Return value    :    - 
 ****************************************************************************/
 static void cdcable(volatile  st_usb_object_t *_pchannel, BOOL _bConnected)
-{
+{    
     if(TRUE == _bConnected)
     {
         DEBUG_MSG_HIGH( ("USBHID: Cable Connected\r\n"));
         TRACE( ("USBHID: Cable Connected\r\n"));
-
+        
         _pchannel->connected = TRUE;
     }
     else
@@ -619,14 +619,14 @@ static void cdcable(volatile  st_usb_object_t *_pchannel, BOOL _bConnected)
 }
 /**********************************************************************************
 End of function cdcable
-***********************************************************************************/
+***********************************************************************************/   
 
 /***********************************************************************************
 * Function Name    :    cberror
 * Description    :    One of the lower layers has reported an error.
 *                     Not expecting this but try resetting HAL.
 * Argument        :    -
-* Return value    :    -
+* Return value    :    - 
 ****************************************************************************/
 static void cberror(volatile st_usb_object_t *_pchannel, usb_err_t _err)
 {
@@ -634,27 +634,27 @@ static void cberror(volatile st_usb_object_t *_pchannel, usb_err_t _err)
 
     DEBUG_MSG_HIGH( ("USBHID: ***cberror***\r\n"));
     assert(0);
-
+    
     /*Reset HAL*/
     R_USB_HalReset(_pchannel);
-
+    
     /* configure and Reset Endpoints */
     R_USB_HalResetEp(_pchannel, 1);
 }
 /**********************************************************************************
 End of function cberror
-***********************************************************************************/
+***********************************************************************************/   
 
 /******************************************************************************
 * Function Name    :    copy_input_report
 * Description    :    Copy supplied input report to input report buffer.
 * Argument        :    _report_in - Input report
-* Return value    :    -
+* Return value    :    - 
 ****************************************************************************/
 static void copy_input_report(volatile st_usb_object_t *_pchannel, uint8_t (*_report_in)[])
 {
     uint16_t index;
-
+        
     /*Copy INPUT Report - so can send it whenever a GET_REPORT
     request is received.*/
     for(index = 0; index < _pchannel->descriptors.report_in.length; index++)
@@ -664,7 +664,7 @@ static void copy_input_report(volatile st_usb_object_t *_pchannel, uint8_t (*_re
 }
 /**********************************************************************************
 End of function copy_input_report
-***********************************************************************************/
+***********************************************************************************/   
 
 
 /******************************************************************************

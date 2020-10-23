@@ -415,7 +415,7 @@ static _Bool mseSetInterval (PHIDMSE pHidMse, uint8_t byInterval)
 
 /******************************************************************************
  Function Name: mseParseReport
- Description:   Parse the report from the mouse
+ Description:    Parse the report from the mouse
  Arguments:     IN  pHidMse - Pointer to the driver extension
                 IN  pbyReport - Pointer to the report
  Return value:  none

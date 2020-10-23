@@ -382,7 +382,7 @@ typedef struct _USBTR
 
                                     /* OUT */
     uint32_t uiTransferLength;      /* The number of bytes transfered */
-    REQERR   errorCode;             /* The error code */
+    USBEC    errorCode;             /* The error code */
     event_t  ioSignal;              /* Signal object for the completion of the
                                        transfer */
 } USBTR;

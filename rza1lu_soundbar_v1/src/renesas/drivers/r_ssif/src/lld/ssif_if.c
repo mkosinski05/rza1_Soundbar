@@ -55,7 +55,7 @@ Exported global variables (to be accessed by other files)
 Private global variables and functions
 *******************************************************************************/
 
-static int_t R_SSIF_UnInit(int_t channel, void* const driver_instance, int32_t* const p_errno);
+static int_t R_SSIF_UnInit(void* const driver_instance, int32_t* const p_errno);
 static int_t R_SSIF_Open(void* const p_driver_instance, const char_t* const p_path_name, const int_t flags, const int_t mode, int32_t* const p_errno);
 static int_t R_SSIF_Close(void* const p_fd, int32_t* const p_errno);
 static int_t R_SSIF_Ioctl(void* const p_fd, const int_t request, void* const p_buf, int32_t* const p_errno);
@@ -110,7 +110,7 @@ Private functions
 * @retval        not ERRROR  :driver instance.
 * @retval        IOIF_EERROR      :Failure.
 ******************************************************************************/
-///* ->MISRA 16.7, IPA M1.11.1 : This is IOIF library API type definition that can't be modified. */
+///* ->MISRA 16.7, IPA M1.11.1 : This is IOIF library API type definitnon that can't be modified. */
 //static void* R_SSIF_Init(void* const config_data, int32_t* const p_errno)
 ///* <-MISRA 16.7, IPA M1.11.1 */
 //{
@@ -158,7 +158,7 @@ Private functions
 * @retval        IOIF_ESUCCESS        :Success.
 * @retval        IOIF_EERROR          :Failure.
 ******************************************************************************/
-static int_t R_SSIF_UnInit(int_t channel, void* const driver_instance, int32_t* const p_errno)
+static int_t R_SSIF_UnInit(void* const driver_instance, int32_t* const p_errno)
 {
     int_t   ercd;
     int_t   ret = IOIF_ESUCCESS;
@@ -176,7 +176,7 @@ static int_t R_SSIF_UnInit(int_t channel, void* const driver_instance, int32_t* 
         }
         else
         {
-            ercd = SSIF_UnInitialise(channel);
+            ercd = SSIF_UnInitialise();
             p_info_drv->drv_stat = SSIF_DRVSTS_UNINIT;
         }
     }
@@ -256,7 +256,7 @@ static int_t R_SSIF_Open(void* const p_driver_instance, const char_t* const p_pa
 
         if (IOIF_ESUCCESS == ercd)
         {
-            /* Search the same pathname */
+            /* Serch the same pathname */
             for (ssif_ch = 0u; (ssif_ch < SSIF_NUM_CHANS) && (p_info_ch == NULL); ssif_ch++)
             {
                 len = SSIF_StrnLen(ch_name_string[ssif_ch], SSIF_MAX_PATH_LEN);
@@ -300,7 +300,7 @@ static int_t R_SSIF_Open(void* const p_driver_instance, const char_t* const p_pa
         if (IOIF_ESUCCESS == ercd)
         {
             /* ->MISRA 10.6 : This macro is defined by CMSIS-RTOS that can't be modified. */
-            os_ret = osSemaphoreWait((osSemaphoreId) p_info_ch->sem_access, osWaitForever);
+            os_ret = osSemaphoreWait(p_info_ch->sem_access, osWaitForever);
             /* <-MISRA 10.6 */
 
             if ((-1) == os_ret)
@@ -320,7 +320,7 @@ static int_t R_SSIF_Open(void* const p_driver_instance, const char_t* const p_pa
                     p_info_ch->ch_stat = SSIF_CHSTS_OPEN;
                 }
             }
-            os_ercd = osSemaphoreRelease((osSemaphoreId) p_info_ch->sem_access);
+            os_ercd = osSemaphoreRelease(p_info_ch->sem_access);
             if (osOK != os_ercd)
             {
                 ercd = IOIF_EFAULT;
@@ -369,7 +369,7 @@ static int_t R_SSIF_Close(void* const p_fd, int32_t* const p_errno)
     {
         /* ->MISRA 10.6 : This macro is defined by CMSIS-RTOS that can't be modified. */
         /* Get semaphore to access the channel data */
-        os_ret = osSemaphoreWait((osSemaphoreId) p_info_ch->sem_access, osWaitForever);
+        os_ret = osSemaphoreWait(p_info_ch->sem_access, osWaitForever);
         /* <-MISRA 10.6 */
 
         if ((-1) == os_ret)
@@ -395,7 +395,7 @@ static int_t R_SSIF_Close(void* const p_fd, int32_t* const p_errno)
             }
 
             /* Relese semaphore */
-            os_ercd = osSemaphoreRelease((osSemaphoreId) p_info_ch->sem_access);
+            os_ercd = osSemaphoreRelease(p_info_ch->sem_access);
 
             if (osOK != os_ercd)
             {
@@ -447,7 +447,7 @@ static int_t R_SSIF_Ioctl(void* const p_fd, const int_t request, void* const p_b
         else
         {
             /* ->MISRA 10.6 : This macro is defined by CMSIS-RTOS that can't be modified. */
-            os_ret = osSemaphoreWait((osSemaphoreId) p_info_ch->sem_access, osWaitForever);
+            os_ret = osSemaphoreWait(p_info_ch->sem_access, osWaitForever);
             /* <-MISRA 10.6 */
 
             if ((-1) == os_ret)
@@ -495,7 +495,7 @@ static int_t R_SSIF_Ioctl(void* const p_fd, const int_t request, void* const p_b
             }
         }
 
-        os_ercd = osSemaphoreRelease((osSemaphoreId) p_info_ch->sem_access);
+        os_ercd = osSemaphoreRelease(p_info_ch->sem_access);
         if (osOK != os_ercd)
         {
             ercd = IOIF_EFAULT;
@@ -641,7 +641,7 @@ static int_t R_SSIF_Cancel(void* const p_fd, AIOCB* const p_aio, int32_t* const 
     {
         /* ->MISRA 10.6 : This macro is defined by CMSIS-RTOS that can't be modified. */
         /* Get semaphore to access the channel data */
-        os_ret = osSemaphoreWait((osSemaphoreId) p_info_ch->sem_access, osWaitForever);
+        os_ret = osSemaphoreWait(p_info_ch->sem_access, osWaitForever);
         /* <-MISRA 10.6 */
 
         if ((-1) == os_ret)
@@ -659,7 +659,7 @@ static int_t R_SSIF_Cancel(void* const p_fd, AIOCB* const p_aio, int32_t* const 
                 SSIF_PostAsyncCancel(p_info_ch, p_aio);
             }
 
-            os_ercd = osSemaphoreRelease((osSemaphoreId) p_info_ch->sem_access);
+            os_ercd = osSemaphoreRelease(p_info_ch->sem_access);
 
             if (osOK != os_ercd)
             {

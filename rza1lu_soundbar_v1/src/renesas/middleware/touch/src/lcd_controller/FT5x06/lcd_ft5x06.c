@@ -96,6 +96,7 @@ int_t LCD_Ft5x06_Open (const uint32_t unIrqLv, int16_t nTskPri, uint32_t unTskSt
 
     /* set the clock frequency for the I2C channel */
     riic_clock.frequency = RIIC_FREQUENCY_100KHZ;
+    riic_clock.subAddr_bytes = 1;
 
     nRet = 0;
     memset( &LcdEvt_Entry, 0, sizeof(LcdEvt_Entry));
@@ -225,12 +226,13 @@ int_t LCD_Ft5x06_Close (void)
 uint8_t LCD_Ft5x06_WriteCmd (const uint16_t unDevAddr, const uint8_t uData, const uint32_t unSize)
 {
     int_t nRet;
+    uint8_t sub_addr = 0;
 
     st_r_drv_riic_config_t i2c_write;
 
     /* cast to uint8_t */
     i2c_write.device_address = (uint8_t)unDevAddr;
-    i2c_write.sub_address = 0;
+    i2c_write.sub_address = &sub_addr;
     i2c_write.number_of_bytes = unSize;
 
     /* cast to uint8_t pointer */
@@ -258,10 +260,11 @@ uint8_t LCD_Ft5x06_ReadCmd (const uint16_t unDevAddr, uint8_t *puData, const uin
     int_t nRet;
 
     st_r_drv_riic_config_t i2c_read;
+    uint8_t sub_addr = 0;
 
     /* cast to uint8_t */
     i2c_read.device_address = (uint8_t)unDevAddr;
-    i2c_read.sub_address = 0;
+    i2c_read.sub_address = &sub_addr;
     i2c_read.number_of_bytes = unSize;
     i2c_read.p_data_buffer = puData;
 

@@ -40,9 +40,6 @@
 /*******************************************************************************
 * History       : DD.MM.YYYY Version Description
 *               : 06.07.2016 1.00    Ported from RZA1H
-*               : 15.10.2019 1.01    IRQ code is now in FreeRTOS so has been
-*                                    removed from irqfiq_handler.S (now renamed
-*                                    to fiq_handler.S).
 *******************************************************************************/
 
     .text
@@ -52,36 +49,21 @@
     .func   start
 
 start:
-    /* reset_handler /renesas/compiler/asm/reset_handler.S                     */
-    LDR pc, =reset_handler
-
-    /* undefined_handler /renesas/compiler/asm/reset_handler.S                 */
+    LDR pc, =reset_handler                 /* Reset Vector                                  */
     LDR pc, =undefined_handler
-
-    /* FreeRTOS_SWI_Handler /freertos/portable/gcc/arm_ca9_rza1lu/portasm.S    */
     LDR pc, =FreeRTOS_SWI_Handler
-
-    /* prefetch_handler /renesas/compiler/asm/reset_handler.S                  */
     LDR pc, =prefetch_handler
-
-    /* abort_handler /renesas/compiler/asm/reset_handler.S                     */
     LDR pc, =abort_handler
-
-    /* reserved_handler /renesas/compiler/asm/reset_handler.S                  */
     LDR pc, =reserved_handler
-
-    /* FreeRTOS_IRQ_Handler /freertos/portable/gcc/arm_ca9_rza1lu/portasm.S    */
     LDR pc, =FreeRTOS_IRQ_Handler
-
-    /* fiq_handler /renesas/compiler/asm/fiq_handler.S                      */
     LDR pc, =fiq_handler
 code_start:
-    .word    start            /* pointer to the user application start address */
-                              /* Used by NOR and SPI (RZ_A1H_xxxx_LOADER_RSK)  */
+    .word    start                         /* pointer to the user application start address */
+                                           /* Used by NOR and SPI (RZ_A1H_xxxx_LOADER_RSK)  */
 code_end:
     .word    end
 code_execute:
-    .word    execute                   /* execute address of first instruction */
-    .string ".BootLoad_ValidProgramTest." /* bootloader validation signature   */
+    .word    execute                       /* execute address of first instruction          */
+    .string ".BootLoad_ValidProgramTest."  /* bootloader validation signature               */
     .align 4
     .end

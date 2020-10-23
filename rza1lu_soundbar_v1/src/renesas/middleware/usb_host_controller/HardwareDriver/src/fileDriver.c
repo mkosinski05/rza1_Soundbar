@@ -136,7 +136,6 @@ st_r_driver_t* fileLoadDriver (st_stream_ptr_t stream_ptr, char * pszFileName, i
     if (pDrive)
     {
         int iffMode = 0;
-
         /* The ':' character delimits the drive from the file path and name */
         char * pszPath = strstr(pszFileName, ":");
 
@@ -328,7 +327,7 @@ static int fileControl (st_stream_ptr_t stream_ptr, uint32_t ctlCode, void *pCtl
             if (pCtlStruct)
             {
                 PFILESEEK pSeek = (PFILESEEK) pCtlStruct;
-                FRESULT fatError = R_FAT_SeekFile(pFile, (unsigned)pSeek->lOffset, pSeek->iBase, &pSeek->lResult);
+                FATERR fatError = R_FAT_SeekFile(pFile, (unsigned)pSeek->lOffset, pSeek->iBase, &pSeek->lResult);
 
                 if (!fatError)
                 {

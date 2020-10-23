@@ -234,7 +234,7 @@ static void stop_device(void)
     R_USB_CdcCancel(&channel);
 
     /* USB close */
-    R_USB_HalClose(&channel);
+//    R_USB_HalClose(&channel);
 
     /* USB interrupt disable */
     R_INTC_Disable(INTC_ID_USBI0);
@@ -320,6 +320,7 @@ static void usbf_cdc_close (st_stream_ptr_t pStream)
     {
         ref_count--;
 
+        stop_device();
         eventReset(g_usb_devices_events[0]);
         memset(&config,0,sizeof(config));
         memset((st_usb_object_t *)&channel,0,sizeof(channel));

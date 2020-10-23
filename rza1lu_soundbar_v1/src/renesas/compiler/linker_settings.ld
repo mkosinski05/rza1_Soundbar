@@ -67,7 +67,7 @@ ABT_STACK_SIZE     = 0x2000;     /* ABT mode stack                     */
 TTB_SIZE           = 0x8000;     /* Level-1 Translation Table for MMU  */
 NL_HEAP_SIZE       = 0xC800;     /* Newlib heap size 50k Bytes         */
 
-STACK_END = VRAM_START - 0x40000000;
+STACK_END = VRAM_START;
 STACK_LENGTH = PROGRAM_STACK_SIZE + IRQ_STACK_SIZE + FIQ_STACK_SIZE + SVC_STACK_SIZE + ABT_STACK_SIZE + TTB_SIZE;
 STACK_START  = STACK_END - STACK_LENGTH;
 
@@ -301,10 +301,6 @@ SECTIONS
     {
         vram_start = .;
         *(.VRAM_SECTION0)
-        *(.ETHER_DESCRIPTOR)
-		PROVIDE(_ld_uncached_heap_start = .);
-        .  += 0x40600;
-		PROVIDE(_ld_uncached_heap_end = .);        
         vram_end = .;
     } > VRAM_MIRROR
 

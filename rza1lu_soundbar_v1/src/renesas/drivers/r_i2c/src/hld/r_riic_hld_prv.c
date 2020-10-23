@@ -87,6 +87,8 @@ static int_t gs_channel_initialise_state[RIIC_LLD_NUM_CHANNELS];
 /* static variable holding overall initialisation status of all i2c channels */
 static int_t gs_overall_initialise_state = 0u;
 
+static uint8_t g_subaddr_size[RIIC_LLD_NUM_CHANNELS] = {1,1,1,1};
+
 /* static array variables holding flag statuses for each channel */
 static volatile uint8_t gs_riic_receive_full_flg[RIIC_LLD_NUM_CHANNELS];
 static volatile uint8_t gs_riic_transmit_empty_flg[RIIC_LLD_NUM_CHANNELS];
@@ -125,6 +127,8 @@ int_t open_channel (int_t channel, st_r_drv_riic_create_t *p_channel_config)
         {
             /* call to low level driver to turn channel on */
             ret = R_RIIC_InitChannel(channel, p_channel_config->frequency);
+
+            g_subaddr_size[channel] = p_channel_config->subAddr_bytes;
 
             if (DEVDRV_SUCCESS == ret)
             {
@@ -663,11 +667,13 @@ static int_t transmit_restart (int_t channel)
  * @return    DEVDRV_SUCCESS         : Success of RIIC operation
  *            DEVDRV_ERROR           : Failure of RIIC operation
  **/
-int_t read_data (int_t channel, uint8_t d_adr, uint16_t r_adr, uint32_t r_byte, uint8_t *pr_buffer)
+int_t read_data (int_t channel, uint8_t d_adr, uint8_t *r_adr, uint32_t r_byte, uint8_t *pr_buffer)
 {
     int_t ret;
-    uint8_t pw_buffer[3];
+    uint8_t pw_buffer[6];
     uint8_t dummy_data;
+    int i = 0;
+    uint8_t s_byte = g_subaddr_size[channel];
 
     /* ensure that channel is valid */
     ret = validate_channel(channel);
@@ -676,10 +682,12 @@ int_t read_data (int_t channel, uint8_t d_adr, uint16_t r_adr, uint32_t r_byte, 
     pw_buffer[0] = (uint8_t) (d_adr & ((uint8_t)(~SAMPLE_RIIC_RWCODE_PRV_)));
 
     /* Adding slave sub-address */
-    pw_buffer[1] = (uint8_t) (r_adr & 0x00ff);
+    for ( int i = 1; i <= s_byte; i++ ) {
+    	pw_buffer[i] = (*r_adr++);
+    }
 
     /* Setting slave device address and read control */
-    pw_buffer[2] = (uint8_t) (d_adr | ((uint8_t)SAMPLE_RIIC_RWCODE_PRV_));
+    pw_buffer[i] = (uint8_t) (d_adr | ((uint8_t)SAMPLE_RIIC_RWCODE_PRV_));
 
     if (DEVDRV_SUCCESS == ret)
     {
@@ -798,10 +806,11 @@ int_t read_next_data (int_t channel, uint8_t d_adr, uint32_t r_byte, uint8_t *pr
  *                                     NACK reception
  *            DEVDRV_ERROR_TIMEOUT   : IIC operation timed out
  **/
-int_t write_data (int_t channel, uint8_t d_adr, uint16_t w_adr, uint32_t w_byte, uint8_t *pw_buffer)
+int_t write_data (int_t channel, uint8_t d_adr, uint8_t *w_adr, uint32_t w_byte, uint8_t *pw_buffer)
 {
     int_t ret;
-    uint8_t buf[2];
+    uint8_t buf[5];
+    uint8_t s_byte = g_subaddr_size[channel];
 
     /* Ensure channel is valid */
     ret = validate_channel(channel);
@@ -810,7 +819,9 @@ int_t write_data (int_t channel, uint8_t d_adr, uint16_t w_adr, uint32_t w_byte,
     buf[0] = (uint8_t) (d_adr & ((uint8_t)(~SAMPLE_RIIC_RWCODE_PRV_)));
 
     /* Adding slave sub-address */
-    buf[1] = (uint8_t) (w_adr & 0x00ff);
+    for ( int i = 1; i <= s_byte; i++ ) {
+    	buf[i] = (*w_adr++);
+    }
 
     if (DEVDRV_SUCCESS == ret)
     {
@@ -833,7 +844,7 @@ int_t write_data (int_t channel, uint8_t d_adr, uint16_t w_adr, uint32_t w_byte,
     if (DEVDRV_SUCCESS == ret)
     {
         /* write slave sub-address */
-        ret = riic_write(channel, (uint8_t *) &(buf[1]), 1);
+        ret = riic_write(channel, (uint8_t *) &(buf[1]), s_byte);
     }
 
     if (DEVDRV_SUCCESS == ret)

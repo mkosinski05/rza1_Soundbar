@@ -258,54 +258,54 @@ gcFifoConfig[] =
      double buffered high speed bulk endpoints */
     /* Pipe 1 - ISOC & BULK */
 
-    /* Buffer Size */
+	/* Buffer Size */
     {USB_PIPEBUF_BUFSIZE_FUNC(512) |
     /* Buffer Number */
     USB_PIPEBUF_BUFNMB_FUNC(8)},
 
-    /* Pipe 2 - ISOC & BULK */
+	/* Pipe 2 - ISOC & BULK */
     /* Buffer Size */
     {USB_PIPEBUF_BUFSIZE_FUNC(512) |
     /* Buffer Number */
     USB_PIPEBUF_BUFNMB_FUNC(24)},
 
-    /* Pipe 3 - BULK */
+	/* Pipe 3 - BULK */
     /* Buffer Size */
     {USB_PIPEBUF_BUFSIZE_FUNC(512) |
     /* Buffer Number */
     USB_PIPEBUF_BUFNMB_FUNC(40)},
 
-    /* Pipe 4 - BULK */
+	/* Pipe 4 - BULK */
     /* Buffer Size */
     {USB_PIPEBUF_BUFSIZE_FUNC(512) |
     /* Buffer Number */
     USB_PIPEBUF_BUFNMB_FUNC(56)},
 
-    /* Pipe 5 - BULK */
+	/* Pipe 5 - BULK */
     /* Buffer Size */
     {USB_PIPEBUF_BUFSIZE_FUNC(512) |
     /* Buffer Number */
     USB_PIPEBUF_BUFNMB_FUNC(72)},
 
-    /* Pipe 6 - INTERRUPT - Fixed to buffer 4 */
+	/* Pipe 6 - INTERRUPT - Fixed to buffer 4 */
     /* Buffer Size */
     {USB_PIPEBUF_BUFSIZE_FUNC(64) |
     /* Buffer Number */
     USB_PIPEBUF_BUFNMB_FUNC(4)},
 
-    /* Pipe 7 - INTERRUPT - Fixed to buffer 5 */
+	/* Pipe 7 - INTERRUPT - Fixed to buffer 5 */
     /* Buffer Size */
     {USB_PIPEBUF_BUFSIZE_FUNC(64) |
     /* Buffer Number */
     USB_PIPEBUF_BUFNMB_FUNC(5)},
 
-    /* Pipe 8 - INTERRUPT - Fixed to buffer 6 */
+	/* Pipe 8 - INTERRUPT - Fixed to buffer 6 */
     /* Buffer Size */
     {USB_PIPEBUF_BUFSIZE_FUNC(64) |
     /* Buffer Number */
     USB_PIPEBUF_BUFNMB_FUNC(6)},
 
-    /* Pipe 9 - INTERRUPT - Fixed to buffer 7 */
+	/* Pipe 9 - INTERRUPT - Fixed to buffer 7 */
     /* Buffer Size */
     {USB_PIPEBUF_BUFSIZE_FUNC(64) |
     /* Buffer Number */
@@ -497,7 +497,7 @@ void R_USBH_Initialise (PUSB pUSB)
     /* Enable host controller function */
     rza_io_reg_write_16(&pUSB->SYSCFG0, (USB_SYSCFG_HSE | USB_SYSCFG_DCFM | USB_SYSCFG_DRPD | USB_SYSCFG_USBE),
                         NO_SHIFT, (USB_SYSCFG_HSE | USB_SYSCFG_DCFM | USB_SYSCFG_DRPD | USB_SYSCFG_USBE));
-
+    
 
     /* Exit suspend mode */
     rza_io_reg_write_16(&pUSB->SUSPMODE, 0x1, USB_SUSPMODE_SUSPM_SHIFT, USB_SUSPMODE_SUSPM);
@@ -1035,16 +1035,17 @@ _Bool R_USBH_GetPipeInterrupt (PUSB pUSB, int iPipeNumber, USBIP buffIntType, _B
                         return true;
                     }
                 break;
+
                 case USBH_PIPE_INT_DISABLE:
-                {
-                    /* do nothing */
-                    break;
-                }
+				{
+                	/* do nothing */
+                	break;
+				}
                 case USBH_PIPE_INT_ENABLE:
-                {
-                    /* do nothing */
-                    break;
-                }
+				{
+                	/* do nothing */
+                	break;
+				}
             }
             return false;
         }
@@ -1070,16 +1071,17 @@ _Bool R_USBH_GetPipeInterrupt (PUSB pUSB, int iPipeNumber, USBIP buffIntType, _B
                         return true;
                     }
                 break;
+
                 case USBH_PIPE_INT_DISABLE:
-                {
-                    /* do nothing */
-                    break;
-                }
+				{
+                	/* do nothing */
+                	break;
+				}
                 case USBH_PIPE_INT_ENABLE:
-                {
-                    /* do nothing */
-                    break;
-                }
+				{
+                	/* do nothing */
+                	break;
+				}
             }
             return false;
         }
@@ -1111,16 +1113,17 @@ _Bool R_USBH_GetPipeInterrupt (PUSB pUSB, int iPipeNumber, USBIP buffIntType, _B
                         return true;
                     }
                 break;
+
                 case USBH_PIPE_INT_DISABLE:
-                {
-                    /* do nothing */
-                    break;
-                }
+				{
+                	/* do nothing */
+                	break;
+				}
                 case USBH_PIPE_INT_ENABLE:
-                {
-                    /* do nothing */
-                    break;
-                }
+				{
+                	/* do nothing */
+                	break;
+				}
             }
             return false;
         }
@@ -1146,16 +1149,17 @@ _Bool R_USBH_GetPipeInterrupt (PUSB pUSB, int iPipeNumber, USBIP buffIntType, _B
                         return true;
                     }
                 break;
+
                 case USBH_PIPE_INT_DISABLE:
-                {
-                    /* do nothing */
-                    break;
-                }
+				{
+                	/* do nothing */
+                	break;
+				}
                 case USBH_PIPE_INT_ENABLE:
-                {
-                    /* do nothing */
-                    break;
-                }
+				{
+                	/* do nothing */
+                	break;
+				}
             }
             return false;
         }
@@ -1453,9 +1457,7 @@ void R_USBH_StopDmaPipe (PUSB pUSB)
 
 #if USBH_FIFO_BIT_WIDTH == 32
     USB_D0FIFOSEL(pUSB, USB_CFIFOSEL_MBW_FUNC(2));
-
-    /* Disable DMA Transfer End Sampling */
-    rza_io_reg_write_16(&pUSB->D0FBCFG, 0x0, USB_DnFBCFG_TENDE_SHIFT, USB_DnFBCFG_TENDE);
+    rza_io_reg_write_16(&pUSB->D0FBCFG, 0x0, USB_DnFBCFG_TENDE_SHIFT, USB_DnFBCFG_TENDE);        /* Disable DMA Transfer End Sampling */
 #else
     USB_D0FIFOSEL(pUSB, USB_CFIFOSEL_MBW_FUNC(1));
 #endif
@@ -1839,7 +1841,7 @@ _Bool R_USBH_PipeReady (PUSB pUSB, int iPipeNumber)
     }
     else if (iPipeNumber == 0)
     {
-        if (rza_io_reg_read_16(&pUSB->DCPCTR, USB_DCPCTR_PBUSY, USB_DCPCTR_PBUSY))
+        if (rza_io_reg_read_16(&pUSB->DCPCTR, USB_DCPCTR_PBUSY, USB_DCPCTR_PBUSY)) 
         {
             return false;
         }
@@ -2013,9 +2015,7 @@ static int r_usbh_wait_fifo (PUSB pUSB, int iPipeNumber, int iCountOut)
         {
             /* Clear the pipe */
             USB_PIPECTR(pUSB, iPipeNumber)->BIT.PID = 0;
-
-            /* BCLR, register seems to want a full length access */
-            rza_io_reg_write_16(&pUSB->CFIFOCTR, 1, USB_CFIFOCTR_BCLR_SHIFT, USB_CFIFOCTR_BCLR);
+            rza_io_reg_write_16(&pUSB->CFIFOCTR, 1, USB_CFIFOCTR_BCLR_SHIFT, USB_CFIFOCTR_BCLR);     /* BCLR, register seems to want a full length access */
             USB_PIPECTR(pUSB, iPipeNumber)->BIT.ACLRM = 1;
             USB_PIPECTR(pUSB, iPipeNumber)->BIT.ACLRM = 0;
             USB_PIPECTR(pUSB, iPipeNumber)->BIT.ACLRM = 1;

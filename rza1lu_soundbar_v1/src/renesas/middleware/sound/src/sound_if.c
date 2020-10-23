@@ -120,7 +120,7 @@ int32_t R_SOUND_Init (void)
 
         if (DEVDRV_SUCCESS == ercd)
         {
-            ercd = sound_init();
+            sound_init();
         }
 
         if (DEVDRV_SUCCESS == ercd)

@@ -44,7 +44,7 @@
  Includes   <System Includes> , "Project Includes"
  ******************************************************************************/
 #include "usbhDriverInternal.h"
-#include "hwDmaif.h"
+#include "hwDmaIf.h"
 #include "trace.h"
 
 /******************************************************************************
@@ -297,7 +297,7 @@ static void usbhContinueIsocOutFifo (PUSBTR pRequest, int iPipeNumber)
         else
         {
             /* Error accessing FIFO for write */
-            pRequest->errorCode = REQ_FIFO_WRITE_ERROR;
+            pRequest->errorCode = USBH_FIFO_WRITE_ERROR;
             TRACE(("usbhIsocOut: Error accessing FIFO\r\n"));
         }
     }

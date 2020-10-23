@@ -97,6 +97,7 @@ typedef enum
 typedef struct r_drv_riic_create_t
 {
     e_clk_frequency_riic_t frequency; /*!<  RIIC Clock Frequency */
+    uint8_t	subAddr_bytes; /* Number of bytes for the sub address */
 } st_r_drv_riic_create_t;
 
 /** Configuration of access to i2c peripheral */
@@ -104,7 +105,7 @@ typedef struct r_drv_riic_config_t
 {
     uint8_t  pad;
     uint8_t  device_address; /*!<  Device I2C address */
-    uint16_t sub_address; /*!<  Start address of registers to access in device */
+    uint8_t *sub_address; /*!<  Start address of registers to access in device */
     uint32_t number_of_bytes; /*!<  Number of bytes to read */
     uint8_t  *p_data_buffer; /*!<  Pointer to source/destination buffer */
 } st_r_drv_riic_config_t;

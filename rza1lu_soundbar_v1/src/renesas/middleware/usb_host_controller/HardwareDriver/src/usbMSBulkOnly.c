@@ -14,13 +14,13 @@
  * ANY REASON RELATED TO THIS SOFTWARE, EVEN IF RENESAS OR ITS AFFILIATES HAVE
  * BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
  * Renesas reserves the right, without notice, to make changes to this software
- * and to discontinue the availability of this software. By using this software
+ * and to discontinue the availability of this software. By using this software,
  * you agree to the additional terms and conditions found by accessing the
  * following link:
  * http://www.renesas.com/disclaimer
- ******************************************************************************
+ *******************************************************************************
  * Copyright (C) 2012 Renesas Electronics Corporation. All rights reserved.
- ******************************************************************************
+ *******************************************************************************
  * File Name    : usbMSBulkOnly.c
  * Version      : 1.00
  * Device(s)    : Renesas
@@ -30,10 +30,10 @@
  * Description  : USB Mass Storage Class Bulk Only Transport Protocol. See
  *                usbmassbulk_10.pdf for details.
  *                www.usb.org/developers/devclass_docs/usbmassbulk_10.pdf
- ******************************************************************************
+ *******************************************************************************
  * History      : DD.MM.YYYY Ver. Description
  *              : 01.08.2009 1.00 First Release
- *****************************************************************************/
+ ******************************************************************************/
 
 /******************************************************************************
  WARNING!  IN ACCORDANCE WITH THE USER LICENCE THIS CODE MUST NOT BE CONVEYED
@@ -84,7 +84,7 @@ typedef union _UCBW
 {
     /* This is 31 bytes in size so it will always be a short packet for any
      of the packet sizes supported by USB */
-    uint8_t Byte[31];
+    uint8_t                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     Byte[31];
 
     struct
     {
@@ -113,7 +113,7 @@ typedef union _UCBW
 #pragma pack (1)
 typedef union _CSW
 {
-    uint8_t Byte[13];
+    uint8_t                                                                                                                                                                                                                                                                                                                                                   Byte[13];
     struct
     {
         /* = "USBS" */
@@ -196,7 +196,7 @@ UMSERR usbMsClassGetMaxLun (int iMsDev, uint8_t *pbyMaxLun)
  ******************************************************************************/
 UMSERR usbMsCommand (int iMsDev, int iLun, PMSCMD pMsCmd, void *pvData, size_t *pstLenTrans)
 {
-    UMSERR iErrorCode = 0;
+    UMSERR iErrorCode;
 
     /* The driver has a bug with multiple MS commands because the pipe can
      be re-assigned when the CSW is stuck in the FIFO */
@@ -204,7 +204,7 @@ UMSERR usbMsCommand (int iMsDev, int iLun, PMSCMD pMsCmd, void *pvData, size_t *
     static     event_t ms_command_mutex;
     R_OS_EventWaitMutex(&ms_command_mutex, R_OS_ABSTRACTION_PRV_EV_WAIT_INFINITE);
 #else
-    /* Each logical unit is communicated with through the same ID so mutually
+    /* Each logical uint is communicated with through the same ID so mutually
      exclusive access must be provided */
     control(iMsDev, CTL_USB_MS_WAIT_MUTEX, NULL);
 #endif
@@ -287,13 +287,7 @@ static UMSERR usbMsPutGet (int iMsDev, int iLun, PMSCMD pMsCmd, void *pvData, si
             {
                 /* Clear a stalled IN endpoint */
                 control(iMsDev, CTL_USB_MS_CLEAR_BULK_IN_STALL, NULL);
-                /* Get the status of the command */
-                cmdStsWpr.Field.dCSWTag = cmdBlkWpr.Field.dCBWTag;
-                iErrorCode = usbMsReceiveCSW(iMsDev, &cmdStsWpr);
-                if (iErrorCode)
-                {
-                    TRACE(("usbMsPutGet: Failed to get CSW\r\n"));
-                }
+                control(iMsDev, CTL_USB_MS_RESET, NULL);
                 return USB_MS_PHASE_ERROR;
             }
             else
@@ -308,7 +302,6 @@ static UMSERR usbMsPutGet (int iMsDev, int iLun, PMSCMD pMsCmd, void *pvData, si
     /* Get the status of the command */
     cmdStsWpr.Field.dCSWTag = cmdBlkWpr.Field.dCBWTag;
     iErrorCode = usbMsReceiveCSW(iMsDev, &cmdStsWpr);
-
     if (iErrorCode)
     {
         TRACE(("usbMsPutGet: Failed to get CSW\r\n"));

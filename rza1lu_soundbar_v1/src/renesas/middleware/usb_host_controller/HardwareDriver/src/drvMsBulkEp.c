@@ -91,8 +91,8 @@ typedef struct _BULKEP
     uint32_t dwTimeOut_mS;
 
     /* The mutex event to make sure that devices with more than one logical
-     unit are accessed sequentially */
-    event_t evDeviceMutex;
+     uint are accessed sequentially */
+    pevent_t pevDeviceMutex;
 
     /* The stream name of the device */
     int8_t   pszStreamName[DEVICE_MAX_STRING_SIZE];
@@ -113,7 +113,7 @@ static int blkepRead (st_stream_ptr_t pstream, uint8_t *pbyBuffer, uint32_t uiCo
 static int blkepWrite (st_stream_ptr_t pstream, uint8_t *pbyBuffer, uint32_t uiCount);
 static int blkepControl (st_stream_ptr_t pstream, uint32_t ctlCode, void *pCtlStruct);
 static PUSBEI blkepGetFirstEndpoint (PUSBDI pDevice, USBDIR transferDirection);
-static BLKERR bulkepSetErrorCode (REQERR errorCode);
+static int bulkepSetErrorCode (REQERR errorCode);
 
 /******************************************************************************
  Constant Data
@@ -169,7 +169,7 @@ static int blkepOpen (st_stream_ptr_t pstream)
                 R_OS_CreateEvent(&pBulkEp->deviceRequest.ioSignal);
 
                 /* Create the mutex for the CTL_USB_MS_WAIT_MUTEX control */
-                pBulkEp->evDeviceMutex = R_OS_CreateMutex();
+                pBulkEp->pevDeviceMutex = R_OS_CreateMutex();
 
                 TRACE(("blkepOpen: Opened device %s\r\n",
                                 pstream->p_stream_name));
@@ -219,7 +219,7 @@ static void blkepClose (st_stream_ptr_t pstream)
     R_OS_DeleteEvent(&pBulkEp->readRequest.ioSignal);
     R_OS_DeleteEvent(&pBulkEp->deviceRequest.ioSignal);
 
-    R_OS_DeleteMutex(pBulkEp->evDeviceMutex);
+       R_OS_DeleteMutex(pBulkEp->pevDeviceMutex);
 
     /* Free the memory */
     R_OS_FreeMem(pstream->p_extension);
@@ -244,7 +244,7 @@ static int blkepRead (st_stream_ptr_t pstream, uint8_t *pbyBuffer, uint32_t uiCo
     {
         _Bool bfResult;
         pBulkEp->lastError = BULK_EP_NO_ERROR;
-        pBulkEp->readRequest.errorCode = REQ_NO_ERROR;
+        pBulkEp->readRequest.errorCode = USBH_NO_ERROR;
 
         bfResult = usbhStartTransfer(pBulkEp->pDevice, &pBulkEp->readRequest, pBulkEp->pInEndpoint, pbyBuffer,
                 (size_t) uiCount, pBulkEp->dwTimeOut_mS);
@@ -330,15 +330,15 @@ static int blkepWrite (st_stream_ptr_t pstream, uint8_t *pbyBuffer, uint32_t uiC
  Arguments:     IN  errorCode - The transfer request error code
  Return value:  The bulk driver simplified error code
  ******************************************************************************/
-static BLKERR bulkepSetErrorCode (REQERR errorCode)
+static int bulkepSetErrorCode (REQERR errorCode)
 {
     switch (errorCode)
     {
-        case REQ_NOT_RESPONDING_ERROR :
+        case USBH_NOT_RESPONDING_ERROR :
             TRACE(("bulkepSetErrorCode: Endpoint stalled\r\n"));
             return BULK_EP_STALL_ERROR;
 
-        case REQ_DATA_OVERRUN_ERROR :
+        case USBH_DATA_OVERRUN_ERROR :
             TRACE(("bulkepSetErrorCode: Endpoint buffer overrun\r\n"));
             return BULK_EP_OVERRUN_ERROR;
 
@@ -581,20 +581,19 @@ static int blkepControl (st_stream_ptr_t pstream, uint32_t ctlCode, void *pCtlSt
 
         case CTL_USB_MS_WAIT_MUTEX :
         {
-        	R_OS_EventWaitMutex(&pBulkEp->evDeviceMutex, R_OS_ABSTRACTION_PRV_EV_WAIT_INFINITE);
+            R_OS_EventWaitMutex(pBulkEp->pevDeviceMutex, R_OS_ABSTRACTION_PRV_EV_WAIT_INFINITE);
             break;
         }
 
         case CTL_USB_MS_RELEASE_MUTEX :
         {
-        	R_OS_EventReleaseMutex(&pBulkEp->evDeviceMutex);
+            R_OS_EventReleaseMutex(pBulkEp->pevDeviceMutex);
             break;
         }
 
         default :
             return BULK_EP_INVALID_CONTROL_CODE;
     }
-
     return BULK_EP_NO_ERROR;
 }
 /******************************************************************************

@@ -50,7 +50,6 @@
 #include "r_task_priority.h"
 #include "dev_drv.h"
 
-//#include "command.h"
 #include "console.h"
 #include "trace.h"
 
@@ -192,15 +191,9 @@ static void initalize_control_if ( QueueHandle_t q )
 
         gsp_sound_control_t->track_queue = q;
 
-        if ( false == R_OS_CreateEvent( &gsp_sound_control_t->task_running) ) {
-        	while(1);
-        }
-        if ( false == R_OS_CreateEvent( &gsp_sound_control_t->task_play)) {
-        	while(1);
-        }
-        if ( false == R_OS_CreateEvent( &gsp_sound_control_t->task_stop)) {
-        	while(1);
-        }
+        R_OS_CreateEvent( &gsp_sound_control_t->task_running);
+        R_OS_CreateEvent( &gsp_sound_control_t->task_play);
+        R_OS_CreateEvent( &gsp_sound_control_t->task_stop);
 
     }
 }

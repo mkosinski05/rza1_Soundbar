@@ -160,8 +160,8 @@ typedef struct _HIDKBD
     /* Task for polling the keyboard */
     os_task_t *uiTaskID;
 
-    /* Event to signal new key event */
-    event_t  keyEvent;
+    /* Pointer to an event to signal new key event */
+    PEVENT   pKeyEvent;
 
     /* The state of the keyboard */
     KBDST    kbdState;
@@ -222,7 +222,7 @@ const st_r_driver_t gHidKeyboardDriver =
     no_dev_get_version
 };
 
-/* The first 4 entries are return error codes that are not printed
+/* The first 4 entries are return error codes that are not printed 
  for more information see section 10 Keyboard/Keypad Page (0x07)
  in Hut1_12.pdf */
 static const int8_t gpKeyMapUS[] =
@@ -235,12 +235,11 @@ static const int8_t gpKeyMapUK[] =
 static const int8_t gpKeyMapShiftUK[] =
 {
 
+/*    "\0\0\0\0ABCDEFGHIJKLMNOPQRSTUVWXYZ!\"£$%^&*()\r\b\b\t _+{}|~:@~<>?" */
 /* GNU Compiler modification - below the '\xA3' string entry is used to create the
  * GB Pound symbol. If the ASCII character £ is used the compiler inserts 0xC2, 0xA3
- * which skews the SIZEOF and indexing; */
-/* expected string:
-   "\0\0\0\0ABCDEFGHIJKLMNOPQRSTUVWXYZ!\"£$%^&*()\r\b\b\t _+{}|~:@~<>?"
-   Modified string: */
+ * which skews the SIZEOF and indexing;
+ */
 "\0\0\0\0ABCDEFGHIJKLMNOPQRSTUVWXYZ!\"\xA3$%^&*()\r\b\b\t _+{}|~:@~<>?"
 
 };
@@ -340,7 +339,7 @@ static int_t kbdOpen (st_stream_ptr_t pStream)
                     pHidKbd->ppEventList[0] = pHidKbd->readRequest.ioSignal;
 
                     R_OS_CreateEvent(&pHidKbd->deviceRequest.ioSignal);
-                    R_OS_CreateEvent(&pHidKbd->keyEvent);
+                    eventCreate(&pHidKbd->pKeyEvent, 1);
 
                     /* Start a task to poll the keyboard */
                     pHidKbd->uiTaskID = R_OS_CreateTask("HID Keyboard", (os_task_code_t) kbd_poll_task, pHidKbd,
@@ -380,6 +379,8 @@ static int_t kbdOpen (st_stream_ptr_t pStream)
  End of function  kbdOpen
  ******************************************************************************/
 
+extern bool_t g_usbkbd;
+
 /******************************************************************************
  Function Name: kbdClose
  Description:   Function to close the bulk endpoint driver
@@ -404,13 +405,14 @@ static void kbdClose (st_stream_ptr_t pStream)
     R_OS_DeleteEvent(&pHidKbd->readRequest.ioSignal);
     R_OS_DeleteEvent(&pHidKbd->deviceRequest.ioSignal);
 
-    R_OS_DeleteEvent(&pHidKbd->keyEvent);
+    R_OS_DeleteEvent(&pHidKbd->pKeyEvent);
 
     /* Destroy the key buffer */
-    cbDestroy(pHidKbd->pKeyBuffer);
+    cbDestroy( pHidKbd->pKeyBuffer);
 
     /* Free the driver extension */
     R_OS_FreeMem(pHidKbd);
+    g_usbkbd = false;
 }
 /******************************************************************************
  End of function  kbdClose
@@ -440,8 +442,8 @@ static int_t kbdRead (st_stream_ptr_t pStream, uint8_t *pbyBuffer, uint32_t uiCo
         else
         {
             /* Wait here for a key-press */
-            R_OS_WaitForEvent(&pHidKbd->keyEvent, portMAX_DELAY);
-            R_OS_ResetEvent(&pHidKbd->keyEvent);
+            eventWait(&pHidKbd->pKeyEvent, 1, true);
+            eventReset(pHidKbd->pKeyEvent);
         }
     }
 
@@ -482,7 +484,7 @@ static int_t kbdControl (st_stream_ptr_t pStream, uint32_t ctlCode, void *pCtlSt
     else if (CTL_GET_STDIN_EVENT == ctlCode)
     {
         PPEVENT ppEvent = (PPEVENT) pCtlStruct;
-        *ppEvent = &pHidKbd->keyEvent;
+        *ppEvent = pHidKbd->pKeyEvent;
         return 0;
     }
     else if (CTL_STREAM_TCP == ctlCode)
@@ -977,7 +979,7 @@ static void kbdPutKey (PHIDKBD pHidKbd)
     }
 
     /* Set the event to wake any task that is waiting for a key press */
-    R_OS_SetEvent(&pHidKbd->keyEvent);
+    eventSet(pHidKbd->pKeyEvent);
 }
 /******************************************************************************
  End of function  kbdPutKey

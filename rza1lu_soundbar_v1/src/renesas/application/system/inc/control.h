@@ -375,8 +375,8 @@ typedef enum
 /*!< Common error codes supported by all drivers */
 typedef enum
 {
-    DRV_SUCCESS = 0,  /*!< No Error */
-    DRV_ERROR = -1,   /*!< General error */
+    DRV_SUCCESS = 0,  /*!< No Error  */
+    DRV_ERROR,        /*!< General error  */
 } e_err_code_t;
 
 /* TODO: Add device specific error codes here */

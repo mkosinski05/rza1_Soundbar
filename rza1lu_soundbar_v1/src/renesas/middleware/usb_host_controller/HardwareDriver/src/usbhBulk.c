@@ -45,7 +45,7 @@
  ******************************************************************************/
 
 #include "usbhDriverInternal.h"
-#include "hwDmaif.h"
+#include "hwDmaIf.h"
 
 /******************************************************************************
  Function Macros
@@ -74,7 +74,6 @@ static void usbhCancelBulkOutDma (PUSBTR pRequest);
 /******************************************************************************
  Exported global variables and functions (to be accessed by other files)
  ******************************************************************************/
-extern bool_t dma_available;
 
 /******************************************************************************
  Function Name: usbhStartBulkTransfer
@@ -225,7 +224,6 @@ _Bool usbhBulkPipeIdle (PUSBTR pRequest, int iPipeNumber)
         {
             ulDmaCount = dmaGetUsbInCh1Count();
         }
-
         if (ulDmaCount == pRequest->pUsbHc->pPipeTrack[iPipeNumber].ulDmaTransCnt)
         {
             return true;
@@ -236,7 +234,6 @@ _Bool usbhBulkPipeIdle (PUSBTR pRequest, int iPipeNumber)
             return false;
         }
     }
-
     return true;
 }
 /******************************************************************************
@@ -257,16 +254,15 @@ _Bool usbhBulkPipeIdle (PUSBTR pRequest, int iPipeNumber)
 static _Bool usbhStartBulkInTransfer (PUSBTR pRequest, int iPipeNumber)
 {
     PUSB pUSB = pRequest->pUSB;
-    int32_t dma_ercd = 0;
 
     /* If the transfer is greater than four packets. The problem here is that
      if there is further data to be received after the the current transfer
      once the DMA has finished the next two packets will automatically be
      accepted into the pipe FIFO. When the DMA completes the pipe is freed
      and the data in the FIFO is lost. */
-
-    if ((pRequest->stLength >= (size_t) (pRequest->pEndpoint->wPacketSize << 2)) && dma_available)
+    if ((pRequest->stLength >= (size_t) (pRequest->pEndpoint->wPacketSize << 2))
     /* See if there is a DMA channel available to handle this request */
+    && (dmaAlloc(DMA_CHANNEL_USBH_IN) == 0))
     {
         uint16_t wNumPackets;
 
@@ -335,8 +331,6 @@ static void usbhCompleteDmaIn (void *pvRequest)
     int iPipeNumber = (int) pRequest->pInternal;
     uint8_t *pbyDest;
     size_t stLengthToRead;
-    int32_t dma_ercd = 0;
-
     /* Disable the endpoint */
     R_USBH_EnablePipe(pRequest->pUSB, iPipeNumber, false);
     /* Disable the IN DMA FIFO settings */
@@ -344,7 +338,8 @@ static void usbhCompleteDmaIn (void *pvRequest)
 
     /* Stop the DMA - Remainder of transfer will now be performed by FIFO */
     dmaStopUsbInCh1();
-
+    /* Free the DMA channel */
+    dmaFree(DMA_CHANNEL_USBH_IN);
     /* Update the index */
     pRequest->stIdx += pRequest->stTransferSize;
     /* The double buffered FIFO may have received up to two packets */
@@ -435,8 +430,6 @@ static void usbhCancelBulkInDma (PUSBTR pRequest)
 {
     PUSB pUSB = pRequest->pUSB;
     int iPipeNumber = (int) pRequest->pInternal;
-    int32_t dma_ercd = 0;
-
     if (iPipeNumber)
     {
         /* Clear the buffer empty interrupt */
@@ -460,6 +453,8 @@ static void usbhCancelBulkInDma (PUSBTR pRequest)
 
         /* Disable the DMA */
         dmaStopUsbInCh1();
+        /* Free the DMA channel */
+        dmaFree(DMA_CHANNEL_USBH_IN);
     }
     else
     {
@@ -480,11 +475,9 @@ static void usbhCancelBulkInDma (PUSBTR pRequest)
 static _Bool usbhStartBulkOutTransfer (PUSBTR pRequest, int iPipeNumber)
 {
     PUSB pUSB = pRequest->pUSB;
-    int32_t dma_ercd = 0;
 
     /* Check to see if this transfer can be handled by DMA */
-
-    if ((pRequest->stLength >= (size_t) pRequest->pEndpoint->wPacketSize) && dma_available)
+    if ((pRequest->stLength >= (size_t) pRequest->pEndpoint->wPacketSize) && (dmaAlloc(DMA_CHANNEL_USBH_OUT) == 0))
     {
         /* Calculate the length of whole packets to transfer */
         size_t stDmaTransferLength = pRequest->stLength - (pRequest->stLength % pRequest->pEndpoint->wPacketSize);
@@ -635,7 +628,6 @@ static void usbhCompleteDmaOut (void *pvRequest)
 {
     PUSBTR pRequest = pvRequest;
     int iPipeNumber = (int) pRequest->pInternal;
-    int32_t dma_ercd = 0;
 
     /* Set the cancel function */
     pRequest->pCancel = usbhCancelOutFifo;
@@ -646,6 +638,10 @@ static void usbhCompleteDmaOut (void *pvRequest)
     /* Stop the DMA - The remainder of the transfer will now be performed
      with the FIFO */
     dmaStopUsbOutCh0();
+
+    /* Free the DMA channel */
+    dmaFree(DMA_CHANNEL_USBH_OUT);
+
 }
 /******************************************************************************
  End of function  usbhCompleteDmaOut
@@ -661,8 +657,6 @@ static void usbhCancelBulkOutDma (PUSBTR pRequest)
 {
     PUSB pUSB = pRequest->pUSB;
     int iPipeNumber = (int) pRequest->pInternal;
-    int32_t dma_ercd = 0;
-
     if (iPipeNumber)
     {
         /* Clear the buffer empty interrupt */
@@ -691,6 +685,8 @@ static void usbhCancelBulkOutDma (PUSBTR pRequest)
 
     /* Disable the DMA */
     dmaStopUsbOutCh0();
+    /* Free the DMA channel */
+    dmaFree(DMA_CHANNEL_USBH_OUT);
 }
 /******************************************************************************
  End of function  usbhCancelBulkOutDma

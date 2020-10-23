@@ -183,8 +183,8 @@ typedef struct
      endpoint. The data that is received is put into a circular buffer */
     PCBUFF pcbuffer;
 
-    os_task_t * ui_rx_task_id;   /* The task polling the RX endpoint */
-    os_task_t * ui_int_task_id;  /* The task polling the interrupt IN endpoint */
+    os_task_code_t ui_rx_task_id; /* The task polling the RX endpoint */
+    os_task_code_t ui_int_task_id; /* The task polling the interrupt IN endpoint */
     scist_t sci_state; /* The state of the RX polling function */
     USBEC rx_error_code;
     scist_t int_state; /* The state of the interrupt in polling function */
@@ -272,12 +272,11 @@ static const baudrates_t baud_rates[] =
 /* Define the default configuration of this device */
 static const SCICFG gsci_default_config =
 {
-    /* Baud rate */
-    SCI_DEFAULT_BAUD,
+/* Baud rate */
+SCI_DEFAULT_BAUD,
 
-    /* Line Coding - asynchronous with (N,8,1) & RTS/DTR asserted */
-    (SCI_PARITY_NONE | SCI_DATA_BITS_EIGHT | SCI_ONE_STOP_BIT | SCI_DTR_ASSERT | SCI_RTS_ASSERT)
-};
+  /* Line Coding - asynchronous with (N,8,1) & RTS/DTR asserted*/
+  ((((SCI_PARITY_NONE | SCI_DATA_BITS_EIGHT ) | SCI_ONE_STOP_BIT ) | SCI_DTR_ASSERT ) | SCI_RTS_ASSERT ), };
 
 /* Define the driver function table for this */
 const st_r_driver_t g_cdc_driver =
@@ -1105,6 +1104,9 @@ static int_t drv_control(st_stream_ptr_t p_stream, uint32_t ctl_code, void *p_ct
     int_t ret_val = 0;  // Assume success
     pcdc_t p_sci_drv = p_stream->p_extension;
 
+    /* For compliance with coding standards this has been split in to
+     * functions of <100 lines.
+     */
     switch (ctl_code)
     {
         case CTL_GET_LAST_ERROR:

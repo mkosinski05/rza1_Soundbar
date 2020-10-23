@@ -51,8 +51,6 @@
 #include "r_wdt_drv_api.h"
 #include "r_eeprom_drv_api.h"
 
-#include "r_dmac_drv_api.h"
-
 #if R_SELF_LOAD_MIDDLEWARE_USB_HOST_CONTROLLER
 #include "r_usb0_drv_api.h"
 #include "fileDriver.h"
@@ -136,14 +134,6 @@ static st_mount_table_t gs_mount_table[] =
 
    /** RTC driver added by USER */
    {"wdt", (st_r_driver_t *)&g_wdt_driver, R_SC0},
-
-   /** SSIF DMA driver added by USER */
-   {"dma_ssif_wr", (st_r_driver_t *)&g_dmac_driver, R_SC0},
-   {"dma_ssif_rd", (st_r_driver_t *)&g_dmac_driver, R_SC1},
-
-   /** USB DMA driver added by USER */
-   {"dma_usb_in", (st_r_driver_t *) &g_dmac_driver, R_SC2},
-   {"dma_usb_out", (st_r_driver_t *) &g_dmac_driver, R_SC3},
 
 #if R_SELF_INSERT_APP_PMOD
    /** PMOD driver added by USER */

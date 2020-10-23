@@ -48,7 +48,7 @@ User Includes
 #include "ff_types.h"
 #include "compiler_settings.h"
 #include "r_os_abstraction_api.h"
-#include "r_cache_l1_rz_api.h"
+
 /***********************************************************************************
 Typedefs
 ***********************************************************************************/
@@ -215,8 +215,6 @@ unsigned long bcRead(PBACHE         pBlkCache,
             volatile size_t  stLength = (size_t)(pBlkCache->iLineSize * pBlkCache->iBlockSize);
             pbyCache = bcGetEntry(pBlkCache, &pEntry);
 
-            R_CACHE_L1_CleanInvalidLine(pbyCache,stLength);
-            
             /* Read into the cache memory */
             if (scsiRead10(pBlkCache->iMsDev,
                            pBlkCache->iLun,
@@ -244,7 +242,6 @@ unsigned long bcRead(PBACHE         pBlkCache,
         memcpy(pbyBuffer, pbyCache, (size_t)pBlkCache->iBlockSize);
         return 1UL;
     }
-
     /* Read directly into memory */
     if (scsiRead10(pBlkCache->iMsDev,
                    pBlkCache->iLun,

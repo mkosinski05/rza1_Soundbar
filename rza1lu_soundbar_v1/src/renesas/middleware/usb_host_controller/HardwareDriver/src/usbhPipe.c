@@ -175,7 +175,14 @@ void usbhTransferError (PUSBTR pRequest)
      or a packet reception error occurred three consecutive times.)
      3. When an overrun/underrun occurred during isochronous transfer. */
     /* Check to see if this is a stall */
-
+    if (R_USBH_GetPipeStall(pRequest->pUSB, iPipeNumber))
+    {
+        /* Set the stall error */
+        pRequest->errorCode = USBH_HALTED_ERROR;
+        /* Complete the request */
+        usbhCancelTransfer(pRequest);
+        TRACE(("usbhTransferError:\r\n"));
+    }
     if (pRequest->pEndpoint->transferType != USBH_ISOCHRONOUS)
     {
         /* Set the a generic error */

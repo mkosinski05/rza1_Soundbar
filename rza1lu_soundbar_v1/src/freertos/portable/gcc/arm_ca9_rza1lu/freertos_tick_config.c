@@ -49,10 +49,10 @@
 typedef void (*ISR_FUNCTION)( uint32_t );
 
 /* Handle to the OSTM ch0 interface, only valid once the channel has been opened and configured (using CTL_OSTM_CREATE_TIMER) */
-static int_t gs_freertos_timer_ch0 = -1;
+int_t gs_freertos_timer_ch0 = -1;
 
 /* Handle to the OSTM ch1 interface, only valid once the channel has been opened and configured (using CTL_OSTM_CREATE_TIMER) */
-static int_t gs_freertos_timer_ch1 = -1;
+int_t gs_freertos_timer_ch1 = -1;
 
 /*
  * The application must provide a function that configures a peripheral to

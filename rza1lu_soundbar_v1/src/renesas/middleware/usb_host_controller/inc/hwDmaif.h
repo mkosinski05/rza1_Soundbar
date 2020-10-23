@@ -23,19 +23,18 @@
 * Copyright (C) 2010 Renesas Electronics Corporation. All rights reserved.
 *******************************************************************************
 * File Name    : hwDmaIf.h
-* Version      : 2.00
+* Version      : 1.0
 * Device(s)    : Renesas
 * Tool-Chain   : GNUARM-NONE-EABI v14.02
 * OS           : None
 * H/W Platform : RSK+
-* Description  : This module interfaces with the dma driver to provide the
-*                support required functionality. Channels used for dma
-*                are now allocated in the dma driver file:
-*                drivers\r_dmac\inc\r_dmac_drv_sc_cfg.h
+* Description  : The hardware interface functions for the DMA. The functions
+*                here could abstract from the DMA hardware providing a simple
+*                interface for DMA usage. This is beyond the scope of this
+*                sample code so it has been made as simple as possible.
 *******************************************************************************
 * History : DD.MM.YYYY Version Description
 *         : 05.08.2010 1.00    First Release
-*         : 28.10.2016 2.00    Second Release (with driver calls not direct)
 ******************************************************************************/
 
 /******************************************************************************
@@ -56,7 +55,15 @@ Includes   <System Includes> , "Project Includes"
 /******************************************************************************
 Macro definitions
 ******************************************************************************/
+/* For Legacy reasons these channels are pre-allocated to
+ * fixed DMA channels. The DMA_PRE_ALLOCATED_CHANNELS is used as the first
+ * channel available to the allocator.
+ */
 
+#define DMA_CHANNEL_USBH_OUT        (0)
+#define DMA_CHANNEL_USBH_IN         (1)
+
+#define DMA_PRE_ALLOCATED_CHANNELS  (2)
 /******************************************************************************
 Function Prototypes
 ******************************************************************************/
@@ -65,13 +72,66 @@ Function Prototypes
 extern "C" {
 #endif
 
+
 /******************************************************************************
- * Function Name: usbOpenDmaDriver
- * Description  : Open the DMA driver for USBN out and in
- * Arguments    : none
- * Return Value : DRV_SUCCESS or DRV_ERROR
- *****************************************************************************/
-extern int_t usbOpenDmaDriver(void);
+ Function Name: R_DMA_FindFreeChannel
+ Description:   Finds and allocates an available DMA channel.
+ Arguments:     None
+ Return value:  Channel allocated or -1 for error;
+ ******************************************************************************/
+extern int32_t R_DMA_AllocFreeChannel(void);
+
+
+/******************************************************************************
+ Function Name: R_DMA_DeAllocChannel
+ Description:   Function to free a DMA channel
+ Arguments:     IN  ichannel - The DMA channel to free
+ Return value:  0 for success or -1 on error
+ ******************************************************************************/
+extern int32_t R_DMA_DeAllocChannel (uint32_t ichannel);
+
+/******************************************************************************
+ Function Name: R_DMA_Channel2Pointer
+ Description:   Function to free a DMA channel
+ Arguments:     IN  ichannel - The DMA channel to get pointers for
+                   OUT ppDMARegBase - Pointer to ichannel's DMA block base address
+ Return value:  0 for failure or 1 for success
+ ******************************************************************************/
+extern uint32_t R_DMA_Channel2Pointer (uint32_t ichannel, void **ppDMARegBase, uint16_t* pintvect);
+
+
+/******************************************************************************
+ Function Name: R_DMA_SetChannelDMARS
+ Description:   Sets up a DMA channel DMARS register to with values provided
+ Arguments:     IN  ichannel - The DMA channel to setup DMARS for
+                IN  by_rid   - RID value for the DMARS register
+                IN  by_mid   - MID value for the DMARS register
+
+ Return value:  0 for failure or 1 for success
+ ******************************************************************************/
+extern uint32_t R_DMA_SetChannelDMARS (uint32_t ichannel, uint8_t by_rid, uint8_t by_mid);
+
+/******************************************************************************
+ Function Name: dmaAlloc
+                Note fcn name not GSCE compliant for legacy code compatibility
+ Description:   Allocates the DMA channel requested, if free.
+                This is supplied for legacy code, use R_DMA_AllocFreeChannel
+                in preference to this function.
+ Arguments:     IN ichannel - DMA Channel Requested
+ Return value:  0 if Channel allocated or -1 for error;
+ ******************************************************************************/
+extern int32_t dmaAlloc (uint32_t ichannel);
+
+/******************************************************************************
+ Function Name: dmaFree
+                Note fcn name not GSCE compliant for legacy code compatibility
+ Description:   Function to free a DMA channel.
+                This is now just a redirector to the R_DMA_DeAllocChannel fcn.
+ Arguments:     IN  ichannel - The DMA channel to free
+ Return value:  0 for success or -1 on error
+ ******************************************************************************/
+extern int32_t dmaFree (uint32_t ichannel);
+
 
 /******************************************************************************
 Function Name: dmaStartUsbOutCh0
@@ -79,7 +139,7 @@ Description:   Function to start DMA channel 0 for a USB OUT transfer
                This is where the DMAC writes to the designated pipe FIFO.
                In this implementation the assignment is DMA Channel 0 always
                uses the USB D0FIFO.
-Arguments:     IN  pvSrc - Pointer to the 4 byte aligned source memory
+Arguments:     IN  pvSrc - Pointer to the 4 byte alligned source memory
                IN  st_length - The length of data to transfer
                IN  p_fifo - Pointer to the destination FIFO
                IN  pv_param - Pointer to pass to the completion routine
@@ -117,7 +177,7 @@ Description:   Function to start DMA channel 1 for a USB IN transfer
                This is where the DMAC writes to the designated pipe FIFO.
                In this implementation the assignment is DMA Channel 1 always
                uses the USB D1FIFO.
-Arguments:     IN  pv_dest - Pointer to the 4 byte aligned destination memory
+Arguments:     IN  pv_dest - Pointer to the 4 byte alligned destination memory
                IN  st_length - The length of data to transfer
                IN  p_fifo - Pointer to the source FIFO
                IN  pv_param - Pointer to pass to the completion routine
@@ -148,6 +208,61 @@ Return value:  none
 ******************************************************************************/
 
 extern  void dmaStopUsbInCh1(void);
+
+/******************************************************************************
+Function Name: dmaStartEtherIn
+Description:   Function to start DMA channel 2 for reading from the ethernet
+               FIFO.  In this implementation the assignment is DMA Channel 2
+               is always used to empty the FIFO
+Arguments:     IN  pv_dest - Pointer to the byte alligned destination memory
+               IN  pvSrc - Pointer to the source memory
+               IN  st_length - The length of data to transfer
+               IN  pv_param - The parameter to pass to the call back
+               IN  pf_complete - Pointer to the completion routine
+Return value:  none
+******************************************************************************/
+
+extern  void dmaStartEtherIn(void     *pv_dest,
+                             void     *pvSrc,
+                             size_t   st_length,
+                             void     *pv_param,
+                             void (*pf_complete)(void *pv_param));
+
+/******************************************************************************
+Function Name: dmaStopEtherIn
+Description:   Function to stop an Ethernet DMA transfer on channel 2
+Parameters:    none
+Return value:  none
+******************************************************************************/
+
+extern  void dmaStopEtherIn(void);
+
+/******************************************************************************
+Function Name: dmaStartEtherOut
+Description:   Function to start DMA channel 3 for writing to the ethernet 
+               TX frame buffer
+Arguments:     OUT pv_dest - Pointer to the destination TX frame
+               IN  pvSrc - Pointer to the source memory
+               IN  st_length - The length of data to transfer
+               IN  pv_param - The parameter to pass to the call back
+               IN  pf_complete - Pointer to the completion routine
+Return value:  none
+******************************************************************************/
+
+extern  void dmaStartEtherOut(void     *pv_dest,
+                              void     *pvSrc,
+                              size_t   st_length,
+                              void     *pv_param,
+                              void (*pf_complete)(void *pv_param));
+
+/******************************************************************************
+Function Name: dmaStopEtherOut
+Description:   Function to stop an Ethernet DMA transfer on channel 3
+Parameters:    none
+Return value:  none
+******************************************************************************/
+
+extern  void dmaStopEtherOut(void);
 
 #ifdef __cplusplus
 }

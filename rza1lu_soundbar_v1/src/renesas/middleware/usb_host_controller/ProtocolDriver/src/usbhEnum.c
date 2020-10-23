@@ -78,7 +78,7 @@
 #define ENUM_DEV_REQUEST_COUNT_OUT  500UL
 /* The number of attempts to enumerate a device */
 #define ENUM_RETRY_COUNT            8
-#define ENUM_DESCRIPTOR_BUFFER_SIZE 255
+#define ENUM_DESCRIPTOR_BUFFER_SIZE 256
 
 /* Comment this line out to turn ON module trace in this file */
 #undef _TRACE_ON_
@@ -1165,7 +1165,7 @@ static void enumDeviceRequestDescriptorAll (void)
     enumDeviceRequest(gUsbEnum.pDevice,
     USB_DEVICE_TO_HOST,
     USB_REQUEST_GET_DESCRIPTOR, USB_SET_VALUE(USB_DEVICE_DESCRIPTOR_TYPE, 0), (uint16_t) 0,
-            (uint16_t) ((PUSBDD) gUsbEnum.pbyDescriptor)->bLength, gUsbEnum.pbyDescriptor);
+            (uint16_t) ENUM_DESCRIPTOR_BUFFER_SIZE, gUsbEnum.pbyDescriptor);
 }
 /******************************************************************************
  End of function  enumDeviceRequestDescriptorAll

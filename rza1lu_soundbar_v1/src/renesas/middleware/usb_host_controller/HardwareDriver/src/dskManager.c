@@ -88,25 +88,31 @@ typedef struct _DSKLST *PDSKLST;
 
 typedef struct _DSKLST
 {
-    PDSKLST    pNext;           /* Pointer to the next disk on the list */
-    DRVSTA     driveState;      /* The current state of the drive */
-    char       chDriveLetter;   /* The drive letter of this disk */
-    int        iMsDev;          /* The file descriptor for this device */
-    int        iLun;            /* The Logical Unit Number for this device */
-    int        iMaxLun;         /* The max LUN for this device */
-    PDRIVE     pDrive;          /* Pointer to the FAT drive object that
-                                   manages the disk */
-    int        iErrorCode;      /* The last IO error code */
-
+    /* Pointer to the next disk on the list */
+    PDSKLST                                                                                  pNext;
+    /* The current state of the drive */
+    DRVSTA                                                                                   driveState;
+    /* The drive letter of this disk */
+    char                                                                                     chDriveLetter;
+    /* The file descriptor for this device */
+    int                                                                                      iMsDev;
+    /* The Logical Unit Number for this device */
+    int                                                                                      iLun;
+    /* The max LUN for this device */
+    int                                                                                      iMaxLun;
+    /* Pointer to the FAT drive object that manages the disk */
+    PDRIVE                                                                                   pDrive;
+    /* The last IO error code */
+    int                                                                                      iErrorCode;
     /* The physical geometry of the media */
     struct
     {
         uint32_t dwNumBlocks;
         uint32_t dwBlockSize;
-    } mediaGeometry;
 
+    } mediaGeometry;
     /* The attributes of the media */
-    _Bool      bfWriteProtect;
+    _Bool                                                                                    bfWriteProtect;
 
 } DSKLST;
 
@@ -155,11 +161,7 @@ void dskStartDiskManager (void)
         R_OS_CreateEvent(&gpevNewDrive);
 
         /* Create the task */
-        (guiTaskID) = R_OS_CreateTask("Disk Manager",
-                                      (os_task_code_t)dskManager,
-                                      NULL,
-                                      R_OS_ABSTRACTION_PRV_DEFAULT_STACK_SIZE,
-                                      TASK_DISK_MANAGER_PRI);
+        (guiTaskID) = R_OS_CreateTask("Disk Manager", (os_task_code_t)dskManager,  NULL, R_OS_ABSTRACTION_PRV_DEFAULT_STACK_SIZE, TASK_DISK_MANAGER_PRI);
     }
 }
 /*****************************************************************************
@@ -231,8 +233,8 @@ int dskMountAllDevices (void)
         PDSKLST pListTop = gpDiskList;
         int iMsDev;
 
-        /* First look for any existing drives that could be mounted because
-           media has been inserted, or any disks that should be removed */
+        /* First look for any existing drives that could be mounted because media
+         has been inserted, or any disks that should be removed */
         while (pListTop)
         {
             /* Check that the device is still attached */
@@ -243,14 +245,10 @@ int dskMountAllDevices (void)
             if (bfAttached)
             {
                 /* If the drive previously had no media */
-                if ((pListTop->chDriveLetter == '?') &&
-                    (pListTop->driveState == DRIVE_NO_MEDIA))
+                if ((pListTop->chDriveLetter == '?') && (pListTop->driveState == DRIVE_NO_MEDIA))
                 {
                     /* Attempt to mount it */
-                    dskMountUnit(pListTop->iMsDev,
-                                 pListTop->iLun,
-                                 pListTop,
-                                 false);
+                    dskMountUnit(pListTop->iMsDev, pListTop->iLun, pListTop, false);
                 }
                 /* Advance to the next disk on the list */
                 pListTop = pListTop->pNext;
@@ -606,9 +604,6 @@ static DSKERR dskMountDevice (int iMsDev)
         return DISK_DRIVER_ERROR;
     }
 
-    /* This is required for some slower USB MS Devices */
-    R_OS_TaskSleep(300UL);
-
     /* Get the max number of logical units for this device */
     if (usbMsClassGetMaxLun(iMsDev, &byMaxLun))
     {
@@ -628,10 +623,9 @@ static DSKERR dskMountDevice (int iMsDev)
         memset(&newDisk, 0, sizeof(DSKLST));
         newDisk.iMaxLun = (int) byMaxLun;
 
-        /* Attempt to mount the unit and create the device */
+        /* Attempt to mount the uint and create the device */
         pDskError[byLun] = dskMountUnit(iMsDev, (int) byLun, &newDisk, true);
     }
-
     /* If an error, other than the media not being inserted occurred,
        report it */
     for (byLun = 0; byLun <= byMaxLun; byLun++)
@@ -725,24 +719,20 @@ DSKERR dskMountPartition (PDSKLST pDisk, int iPartition)
     /* If this disk does not have a FAT drive object then create one */
     if (!pDisk->pDrive)
     {
-         pDisk->pDrive = (PDRIVE) R_FAT_CreateDrive(pDisk->iMsDev,
-                                                    pDisk->iLun,
-                                                    pDisk->mediaGeometry.dwBlockSize,
+         pDisk->pDrive = (PDRIVE) R_FAT_CreateDrive(pDisk->iMsDev, pDisk->iLun, pDisk->mediaGeometry.dwBlockSize,
                       pDisk->mediaGeometry.dwNumBlocks);
     }
 
     if (pDisk->pDrive)
     {
-        /* Proposed_drive_index for this device needed by mount command */
-        /* If the drive fails to mount this proposed_drive_index shall be re-used.*/
-        /* Magic Number 65 is the ASCII code for 'A' being the first posible
-           drive letter. */
+        /* proposed_drive_index for this device needed by mount command */
+        /* If the drive fails to mount this proposed_drive_index shall be re-used */
         pDisk->pDrive->proposed_drive_index = (int8_t)(dskAssignDriveLetter() - (int8_t)65);
 
         /* Ask the FAT library to mount the disk */
         if (R_FAT_MountPartition(pDisk->pDrive))
         {
-            R_FAT_DestroyDrive(pDisk->pDrive);
+                 R_FAT_DestroyDrive(pDisk->pDrive);
             pDisk->pDrive = NULL;
             return DISK_FAILED_TO_MOUNT_PARTITION;
         }
@@ -796,8 +786,7 @@ static DSKERR dskAddDisk (PDSKLST pDisk)
                 /* Assign a drive letter to this disk */
                 pNewDisk->chDriveLetter = chDrive;
             }
-        }
-        TRACE(("dskAddDisk: %c @ 0x%p\r\n", pNewDisk->chDriveLetter, pNewDisk));
+        } TRACE(("dskAddDisk: %c @ 0x%p\r\n", pNewDisk->chDriveLetter, pNewDisk));
         return DISK_OK;
     }
     return DISK_NO_MEMORY;
@@ -938,11 +927,9 @@ static DSKERR dskTestUnitReady (int iMsDev, int iLun)
  ******************************************************************************/
 static DSKERR dskMountUnit (int iMsDev, int iLun, PDSKLST pDisk, _Bool bfAdd)
 {
-    int iRetryCount = 5;
-    int iPartition;
+    int iRetryCount = 2, iPartition;
     DSKERR dskError = DISK_OK;
     TRACE(("dskMountUnit: ID %d LUN %d\r\n", iMsDev, iLun));
-
     /* Wait for the unit to become ready */
     while (iRetryCount--)
     {
@@ -953,15 +940,10 @@ static DSKERR dskMountUnit (int iMsDev, int iLun, PDSKLST pDisk, _Bool bfAdd)
         }
 
         /* Stop if it is ready */
-        else if (!dskError)
+        else if ((!dskError) || (dskError == DISK_MEDIA_NOT_PRESENT) || (dskError == DISK_MEDIA_NOT_AVAILABLE))
         {
             break;
         }
-    }
-
-    if (iRetryCount == 0)
-    {
-        return dskError;
     }
 
     /* Assign file descriptor and logical unit number */
@@ -969,8 +951,7 @@ static DSKERR dskMountUnit (int iMsDev, int iLun, PDSKLST pDisk, _Bool bfAdd)
     pDisk->iLun = iLun;
 
     /* Check for media in the drive */
-    if ((dskError == DISK_MEDIA_NOT_PRESENT) ||
-        (dskError == DISK_MEDIA_NOT_AVAILABLE))
+    if ((dskError == DISK_MEDIA_NOT_PRESENT) || (dskError == DISK_MEDIA_NOT_AVAILABLE))
     {
         /* Set the drive state */
         if (dskError == DISK_MEDIA_NOT_PRESENT)
@@ -989,9 +970,7 @@ static DSKERR dskMountUnit (int iMsDev, int iLun, PDSKLST pDisk, _Bool bfAdd)
     else
     {
         /* Get the media geometry */
-        if (scsiReadCapacity10(iMsDev, iLun,
-                                       &pDisk->mediaGeometry.dwNumBlocks,
-                                       &pDisk->mediaGeometry.dwBlockSize))
+        if (scsiReadCapacity10(iMsDev, iLun, &pDisk->mediaGeometry.dwNumBlocks, &pDisk->mediaGeometry.dwBlockSize))
         {
             return DISK_DRIVER_ERROR;
         } TRACE(("Capacity: Blocks %lu Size %lu\r\n",
@@ -1000,7 +979,6 @@ static DSKERR dskMountUnit (int iMsDev, int iLun, PDSKLST pDisk, _Bool bfAdd)
 
         /* Extra test unit ready required for Rion NA-28 */
         dskError = dskTestUnitReady(iMsDev, iLun);
-
         /* Get the media attributes */
         if (scsiModeSense(iMsDev, iLun, &pDisk->bfWriteProtect))
         {
@@ -1010,7 +988,6 @@ static DSKERR dskMountUnit (int iMsDev, int iLun, PDSKLST pDisk, _Bool bfAdd)
 
         /* Set the drive state */
         pDisk->driveState = DRIVE_READY;
-
         /* Attempt to mount each partition - JUST FIRST ONE FOR NOW */
         for (iPartition = 0; iPartition < 1; iPartition++)
         {

@@ -749,7 +749,7 @@ static void p_usb_bus_reset(volatile st_usb_object_t *_pchannel)
     DEBUG_MSG_HIGH( ("USBHAL: Bus Reset\r\n"));
 
     /* CFIFO Port Select Register  (0x1E) */
-    R_USBF_DataioFPortChange2(_pchannel, PIPE0, CUSE, BITISEL);
+    rza_io_reg_write_16(&_pchannel->phwdevice->CFIFOSEL,  0, ACC_16B_SHIFT, ACC_16B_MASK);
     rza_io_reg_write_16(&_pchannel->phwdevice->CFIFOSEL,  (BITMBW_16 | BITISEL), ACC_16B_SHIFT, ACC_16B_MASK);
 
     /* Clear the CFIFO Buffer */
@@ -1107,16 +1107,15 @@ void R_USB_HalIsr( volatile st_usb_object_t *_pchannel)
         /* CTSQ read */
         int_sts0  = rza_io_reg_read_16(&_pchannel->phwdevice->INTSTS0, ACC_16B_SHIFT, ACC_16B_MASK);
 
-        TRACE((": INTSTS0 0x%x", (rza_io_reg_read_16(&_pchannel->phwdevice->INTSTS0, ACC_16B_SHIFT, ACC_16B_MASK) & 0xFF)));
+        TRACE((": INTSTS0 0x%x", (rza_io_reg_write_16(&_pchannel->phwdevice->INTSTS0, ACC_16B_SHIFT, ACC_16B_MASK) & 0xFF)));
 
         rza_io_reg_write_16(&_pchannel->phwdevice->INTSTS0,  (uint16_t)~BITCTRT, ACC_16B_SHIFT, ACC_16B_MASK);
 
         TRACE((": INTSTS0 0x%x", (rza_io_reg_read_16(&_pchannel->phwdevice->INTSTS0, ACC_16B_SHIFT, ACC_16B_MASK) & 0xFF) ));
 
+
         /* Setup command receive complete */
-        if ( (int_sts0 & BITVALID) != 0 ) {
-            handle_setup_cmd(_pchannel);
-        }
+        handle_setup_cmd(_pchannel);
     }
     else if( (int_sts0 & BITRESM) && (int_enb0 & BITRSME) )
     {
@@ -1158,7 +1157,6 @@ void R_USB_HalIsr( volatile st_usb_object_t *_pchannel)
         ;
     }
     TRACE(("\r\n"));
-
 
 }
 /******************************************************************************
@@ -1308,9 +1306,9 @@ End of function R_USB_HalResetEp
 
 /******************************************************************************
 Function Name    : R_USB_HalConfigGet
-Description      : Gets the current HAL configuration.
-Parameters       : None
-Return value     : Configuration structure.
+Description        : Gets the current HAL configuration.
+Parameters        : None
+Return value    : Configuration structure.
 ******************************************************************************/
 
 const st_usb_hal_config_t* R_USB_HalConfigGet(volatile st_usb_object_t *_pchannel)

@@ -85,7 +85,6 @@ Global Variable
 User Program Code
 ******************************************************************************/
 
-#define FIFO_CHANGE_CHECK_TIMES   (20)    /* us wait */
 
 /******************************************************************************
  * Function Name: usb_delay_1us
@@ -497,7 +496,7 @@ void R_USBF_DataioReceiveStartD0(volatile st_usb_object_t *_pchannel,
     mxps = getMaxPacketSize(_pchannel, Pipe);
     trncnt = (uint16_t)(Bsize / mxps);
     if( Bsize % mxps ) {
-        trncnt++;
+    	trncnt++;
     }
     R_LIB_ClrTRCLR(_pchannel, Pipe);
     R_LIB_SetTRENB(_pchannel, Pipe);
@@ -798,7 +797,6 @@ uint16_t R_USBF_DataioFPortChange1(volatile st_usb_object_t *_pchannel, uint16_t
 {
     uint16_t buf;
     volatile uint16_t    i;
-    uint16_t    loop;
 
     switch(fifosel)
     {
@@ -807,47 +805,29 @@ uint16_t R_USBF_DataioFPortChange1(volatile st_usb_object_t *_pchannel, uint16_t
             _pchannel->generic_buffer2 &= (uint16_t)~(BITISEL | BITCURPIPE);
             _pchannel->generic_buffer2 |= (uint16_t)(isel | Pipe);
             rza_io_reg_write_16(&_pchannel->phwdevice->CFIFOSEL, _pchannel->generic_buffer2, ACC_16B_SHIFT, ACC_16B_MASK);
-            for ( loop = 0; loop < FIFO_CHANGE_CHECK_TIMES; loop++ ) {
-                buf = rza_io_reg_read_16(&_pchannel->phwdevice->CFIFOSEL, ACC_16B_SHIFT, ACC_16B_MASK);
-                if ( (buf & (uint16_t)(BITISEL | BITCURPIPE)) == (uint16_t)(isel | Pipe) ) {
-                    /* Channel selection of FIFO is completed */
-                    break;
-                }
+            do
+            {
                 usb_delay_1us(1);
-            }
-            if ( loop >= FIFO_CHANGE_CHECK_TIMES ) {
-                return( FIFOERROR );
-            }
+                buf = rza_io_reg_read_16(&_pchannel->phwdevice->CFIFOSEL, ACC_16B_SHIFT, ACC_16B_MASK);
+            } while ((buf & (uint16_t)(0x0020u | 0x000Fu)) != (uint16_t)(isel | Pipe));
             break;
         case    D0USE:
         case    D0DMA:
             rza_io_reg_write_16(&_pchannel->phwdevice->D0FIFOSEL,  Pipe, USB_DnFIFOSEL_CURPIPE_SHIFT, USB_DnFIFOSEL_CURPIPE);
-            for ( loop = 0; loop < FIFO_CHANGE_CHECK_TIMES; loop++ ) {
-                buf = rza_io_reg_read_16(&_pchannel->phwdevice->D0FIFOSEL, ACC_16B_SHIFT, ACC_16B_MASK);
-                if ( (buf & (uint16_t)(BITCURPIPE)) == Pipe ) {
-                    /* Channel selection of FIFO is completed */
-                    break;
-                }
+            do
+            {
                 usb_delay_1us(1);
-            }
-            if ( loop >= FIFO_CHANGE_CHECK_TIMES ) {
-                return( FIFOERROR );
-            }
+                buf = rza_io_reg_read_16(&_pchannel->phwdevice->D0FIFOSEL, USB_DnFIFOSEL_CURPIPE_SHIFT, USB_DnFIFOSEL_CURPIPE);
+            } while (buf != (uint16_t)Pipe);
             break;
         case    D1USE:
         case    D1DMA:
             rza_io_reg_write_16(&_pchannel->phwdevice->D1FIFOSEL,  Pipe, USB_DnFIFOSEL_CURPIPE_SHIFT, USB_DnFIFOSEL_CURPIPE);
-            for ( loop = 0; loop < FIFO_CHANGE_CHECK_TIMES; loop++ ) {
-                buf = rza_io_reg_read_16(&_pchannel->phwdevice->D1FIFOSEL, ACC_16B_SHIFT, ACC_16B_MASK);
-                if ( (buf & (uint16_t)(BITCURPIPE)) == Pipe ) {
-                    /* Channel selection of FIFO is completed */
-                    break;
-                }
+            do
+            {
                 usb_delay_1us(1);
-            }
-            if ( loop >= FIFO_CHANGE_CHECK_TIMES ) {
-                return( FIFOERROR );
-            }
+                buf = rza_io_reg_read_16(&_pchannel->phwdevice->D1FIFOSEL, USB_DnFIFOSEL_CURPIPE_SHIFT, USB_DnFIFOSEL_CURPIPE);
+            } while (buf != (uint16_t)Pipe);
             break;
         default:
             break;
@@ -908,8 +888,6 @@ End of function R_USBF_DataioFPortChange1
 ******************************************************************************/
 void R_USBF_DataioFPortChange2(volatile st_usb_object_t *_pchannel, uint16_t Pipe, uint16_t fifosel, uint16_t isel)
 {
-    uint16_t buf, loop;
-
     switch(fifosel)
     {
         case    CUSE:
@@ -919,49 +897,16 @@ void R_USBF_DataioFPortChange2(volatile st_usb_object_t *_pchannel, uint16_t Pip
 
             /* ISEL=1, CURPIPE=0 */
             rza_io_reg_write_16(&_pchannel->phwdevice->CFIFOSEL,  _pchannel->generic_buffer2, ACC_16B_SHIFT, ACC_16B_MASK);
-            for ( loop = 0; loop < FIFO_CHANGE_CHECK_TIMES; loop++ ) {
-                buf = rza_io_reg_read_16(&_pchannel->phwdevice->CFIFOSEL, ACC_16B_SHIFT, ACC_16B_MASK);
-                if ( (buf & (uint16_t)(BITISEL | BITCURPIPE)) == (uint16_t)(isel | Pipe) ) {
-                    /* Channel selection of FIFO is completed */
-                    break;
-                }
-                usb_delay_1us(1);
-            }
-            if ( loop >= FIFO_CHANGE_CHECK_TIMES ) {
-                while(1);
-            }
             break;
 
         case    D0USE:
         case    D0DMA:
             rza_io_reg_write_16(&_pchannel->phwdevice->D0FIFOSEL,  Pipe, USB_DnFIFOSEL_CURPIPE_SHIFT, USB_DnFIFOSEL_CURPIPE);
-            for ( loop = 0; loop < FIFO_CHANGE_CHECK_TIMES; loop++ ) {
-                buf = rza_io_reg_read_16(&_pchannel->phwdevice->D0FIFOSEL, ACC_16B_SHIFT, ACC_16B_MASK);
-                if ( (buf & (uint16_t)(BITCURPIPE)) == Pipe ) {
-                    /* Channel selection of FIFO is completed */
-                    break;
-                }
-                usb_delay_1us(1);
-            }
-            if ( loop >= FIFO_CHANGE_CHECK_TIMES ) {
-                while(1);
-            }
             break;
 
         case    D1USE:
         case    D1DMA:
             rza_io_reg_write_16(&_pchannel->phwdevice->D1FIFOSEL,  Pipe, USB_DnFIFOSEL_CURPIPE_SHIFT, USB_DnFIFOSEL_CURPIPE);
-            for ( loop = 0; loop < FIFO_CHANGE_CHECK_TIMES; loop++ ) {
-                buf = rza_io_reg_read_16(&_pchannel->phwdevice->D1FIFOSEL, ACC_16B_SHIFT, ACC_16B_MASK);
-                if ( (buf & (uint16_t)(BITCURPIPE)) == Pipe ) {
-                    /* Channel selection of FIFO is completed */
-                    break;
-                }
-                usb_delay_1us(1);
-            }
-            if ( loop >= FIFO_CHANGE_CHECK_TIMES ) {
-                while(1);
-            }
             break;
 
         default:

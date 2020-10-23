@@ -66,22 +66,16 @@
 
 #define R_OS_PRV_INFINITE_DELAY               (portMAX_DELAY)
 
+
 #define MIRROR_HEAP_START           ((void *) &_ld_mirrored_heap_start)
 #define MIRROR_HEAP_END             ((void *) &_ld_mirrored_heap_end)
 #define MIRROR_HEAP_LENGTH			(&_ld_mirrored_heap_end - &_ld_mirrored_heap_start)
-
-#define UNCACHED_HEAP_START         ((void *) &_ld_uncached_heap_start)
-#define UNCACHED_HEAP_END           ((void *) &_ld_uncached_heap_end)
-#define UNCACHED_HEAP_LENGTH		(&_ld_uncached_heap_end - &_ld_uncached_heap_start)
 
 /* Note ucHeap is used in freeRTOS for fixed location fixed sized memory pool */
 uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] __attribute__ ((section(".OS_RAM_SECTION")));
 
 extern uint8_t _ld_mirrored_heap_start;
 extern uint8_t _ld_mirrored_heap_end;
-
-extern uint8_t _ld_uncached_heap_start;
-extern uint8_t _ld_uncached_heap_end;
 extern void pvPortsetDesiredBlockForMalloc( size_t xWantedBlock );
 extern void vPortDefineHeapRegions( const HeapRegion_t * const pxHeapRegions );
 
@@ -93,7 +87,6 @@ void vApplicationIdleHook (void);
 HeapRegion_t xHeapRegions[] =
 {
     { ( uint8_t * ) MIRROR_HEAP_START, 0},
-    { ( uint8_t * ) UNCACHED_HEAP_START, 0},
     { NULL, 0 } /* Terminates the array. */
 };
 
@@ -507,10 +500,8 @@ void R_OS_InitMemManager(void)
 
     xHeapRegions[0].pucStartAddress = (MIRROR_HEAP_START);
     xHeapRegions[0].xSizeInBytes = (size_t) MIRROR_HEAP_LENGTH;
-    xHeapRegions[1].pucStartAddress = (UNCACHED_HEAP_START);
-    xHeapRegions[1].xSizeInBytes = (size_t) UNCACHED_HEAP_LENGTH;
-    xHeapRegions[2].pucStartAddress = (0);
-    xHeapRegions[2].xSizeInBytes = (0);
+    xHeapRegions[1].pucStartAddress = (0);
+    xHeapRegions[1].xSizeInBytes = (0);
 
     /* Pass the array into vPortDefineHeapRegions(). */
     vPortDefineHeapRegions( xHeapRegions );
@@ -1030,12 +1021,6 @@ void *R_OS_AllocMem (size_t size, uint32_t region)
 		{
 	        /* Initial Region R_REGION_LARGE_CAPACITY_RAM */
 	        pvPortsetDesiredBlockForMalloc((size_t)xHeapRegions[0].pucStartAddress);
-	        break;
-		}
-		case R_REGION_UNCACHED_RAM:
-		{
-	        /* Initial Region R_REGION_UNCACHED_RAM 0x6020000 */
-	        pvPortsetDesiredBlockForMalloc((size_t)xHeapRegions[1].pucStartAddress);
 	        break;
 		}
 		default:

@@ -387,6 +387,7 @@ static e_eeprom_error_t eeprom_write (uint16_t address, const void *data, size_t
 
     /* setup riic configuration */
     riic_clock.frequency = RIIC_FREQUENCY_100KHZ;
+    riic_clock.subAddr_bytes = 1;
 
     if (NULL != gsp_eeprom_mutex)
     {
@@ -425,7 +426,7 @@ static e_eeprom_error_t eeprom_write (uint16_t address, const void *data, size_t
                     block_length = MIN(block_length, length);
 
                     /* configure eeprom memory address and number of bytes */
-                    i2c_write.sub_address = address;
+                    i2c_write.sub_address = &address;
                     i2c_write.number_of_bytes = block_length;
 
                     /* buffer is not declared as const, so cast to char * to avoid warning */
@@ -484,6 +485,7 @@ static e_eeprom_error_t eeprom_read (uint16_t address, void *data, size_t length
 
     /* setup riic configuration */
     riic_clock.frequency = RIIC_FREQUENCY_100KHZ;
+    riic_clock.subAddr_bytes = 1;
 
     if (NULL != gsp_eeprom_mutex)
     {

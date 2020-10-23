@@ -177,7 +177,7 @@ static void usb0_interrupt (uint32_t status)
 
     /* Check for device detach port 0 */
     else if ( rza_io_reg_read_16(&INTSTS1_0, USB_INTSTS1_DTCH_SHIFT, USB_INTSTS1_DTCH) &
-              rza_io_reg_read_16(&INTENB1_0, USB_INTENB1_DTCHE_SHIFT, USB_INTENB1_DTCHE))
+               rza_io_reg_read_16(&INTENB1_0, USB_INTENB1_DTCHE_SHIFT, USB_INTENB1_DTCHE))
     {
         /* Clear the flag by writing 0 to it */
         rza_io_reg_write_16(&INTSTS1_0, 0, USB_INTSTS1_ATTCH_SHIFT, USB_INTSTS1_ATTCH);
@@ -235,6 +235,8 @@ static int_t usb_host_open (st_stream_ptr_t p_stream)
         GPIO.PBDC7  &= (uint16_t)(~(uint32_t)GPIO_BIT_N1);
         GPIO.P7     |=   (uint32_t)GPIO_BIT_N1;
         GPIO.PM7    &= (uint16_t)(~(uint32_t)GPIO_BIT_N1);
+
+
 
         /* Register the interrupt function */
         R_INTC_RegistIntFunc(INTC_ID_USBI0, usb0_interrupt);
@@ -329,6 +331,7 @@ static void usb_host_close (st_stream_ptr_t p_stream)
         GPIO.PBDC7  |= ((uint32_t)GPIO_BIT_N1);
         GPIO.P7     &= (uint16_t)(~(uint32_t)GPIO_BIT_N1);
         GPIO.PM7    |= ((uint32_t)GPIO_BIT_N1);
+
     }
 }
 /******************************************************************************

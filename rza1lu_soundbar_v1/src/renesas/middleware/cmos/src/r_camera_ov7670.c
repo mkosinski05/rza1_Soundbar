@@ -323,6 +323,7 @@ static void write_omni_table (const omniregister_t Table[])
     else
     {
         riic_clock.frequency = RIIC_FREQUENCY_100KHZ;
+        riic_clock.subAddr_bytes = 1;
         error = control(hi2c1, CTL_RIIC_CREATE, &riic_clock);
         if (0 > error)
         {

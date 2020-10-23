@@ -118,6 +118,7 @@ int32_t RIIC_MAX9856_Open(void)
     {
         /* set the clock frequency for the I2C channel */
         riic_clock.frequency = RIIC_FREQUENCY_100KHZ;
+        riic_clock.subAddr_bytes = 1;
 
         /* Create the I2C channel */
         ercd = control(s_i2c1_ctrl.hi2c1, CTL_RIIC_CREATE, &riic_clock);
@@ -238,10 +239,11 @@ static int32_t RIIC_CH1_REG8_Write(const uint8_t riic_addr, const uint8_t reg_ad
     int32_t riic_ret = DEVDRV_ERROR;
     st_r_drv_riic_config_t i2c_write;
     uint8_t cpy_reg_data = reg_data;
+    uint8_t sub_addr = (uint8_t)(reg_addr & 0x00FF);
 
     /*Set RIIC Address*/
     i2c_write.device_address = riic_addr;
-    i2c_write.sub_address = reg_addr; 
+    i2c_write.sub_address = &sub_addr;
 
     /* Assign Data to Write */
     i2c_write.number_of_bytes = 1u;
@@ -275,7 +277,7 @@ static int32_t RIIC_CH1_REG8_Read(const uint8_t riic_addr, const uint8_t reg_add
 
     /*Set RIIC address*/
     i2c_read.device_address = riic_addr;
-    i2c_read.sub_address = reg_addr;
+    i2c_read.sub_address = &reg_addr;
     
     /*Set location to read to*/
     i2c_read.number_of_bytes = 1u;

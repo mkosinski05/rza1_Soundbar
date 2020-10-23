@@ -112,7 +112,7 @@ void close_channel (int_t channel);
  * @return    DEVDRV_SUCCESS         : Success of RIIC operation
  *            DEVDRV_ERROR           : Failure of RIIC operation
  **/
-int_t read_data (int_t channel, uint8_t d_adr, uint16_t r_adr, uint32_t r_byte, uint8_t *r_buffer);
+int_t read_data (int_t channel, uint8_t d_adr, uint8_t *r_adr, uint32_t r_byte, uint8_t *r_buffer);
 
 /**
  * @brief Read data from slave
@@ -135,7 +135,7 @@ int_t read_next_data (int_t channel, uint8_t d_adr, uint32_t r_byte, uint8_t *r_
  * @return    DEVDRV_SUCCESS         : Success of RIIC operation
  *            DEVDRV_ERROR           : Failure of RIIC operation
  **/
-int_t write_data (int_t channel, uint8_t d_adr, uint16_t w_adr, uint32_t w_byte, uint8_t *pw_buffer);
+int_t write_data (int_t channel, uint8_t d_adr, uint8_t *w_adr, uint32_t w_byte, uint8_t *pw_buffer);
 
 #endif  /* R_RIIC_HLD_PRV_H */
 /**************************************************************************//**

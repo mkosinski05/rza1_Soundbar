@@ -249,13 +249,13 @@ static void usb_stdin_task (void *parameters)
         if (pKbdIn->iStdIn == -1)
         {
             int iStdIn = open(DEVICE_INDENTIFIER "HID Keyboard",
-                              O_RDWR, _IONBF);
+            O_RDWR,
+            _IONBF);
             if (iStdIn != -1)
             {
                 pKbdIn->iStdIn = iStdIn;
 
-                TRACE(("stdinTask: USB Keyboard attached %d\r\n",
-                       pKbdIn->iStdIn));
+                TRACE(("stdinTask: USB Keyboard attached %d\r\n", pKbdIn->iStdIn));
                 /* Set the attached event to start access to the keyboard */
                 R_OS_SetEvent(&pKbdIn->pAttached);
             }

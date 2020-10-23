@@ -68,7 +68,7 @@
 #define SCSI_TEST_UNIT_READY        0x00
 #define SCSI_MODE_SENSE_6           0x1A
 #define SCSI_REQUEST_SENSE          0x03
-#define SCSI_PRVNT_ALLW_MDM_RMVL    0x1E
+#define SCSI_PRVNT_ALLW_MDM_RMVL    0x1E 
 /* SCSI_READ_FORMAT_CAPACITY: Nut used by this code. Specific to MMC devices */
 #define SCSI_READ_FORMAT_CAPACITY   0x23
 /* Start and stop unit bits */
@@ -198,10 +198,10 @@ const MSCMD USB_MS_SCSI_READ_10 =
         0x00, 0x01, /* Transfer length MSB-LSB in blocks*/
         0x00 /* Control */
     },
-    10, /* Length of the command block */
+	10, /* Length of the command block */
     USB_MS_DIRECTION_IN, /* Transfer direction is IN */
     512, /* The length of data (in bytes) - to be set*/
-    8000UL /* Time out (ms) */
+    500UL /* Time out (ms) */
 };
 
 const MSCMD USB_MS_SCSI_READ_CAPACITY_10 =
@@ -218,7 +218,7 @@ const MSCMD USB_MS_SCSI_READ_CAPACITY_10 =
         0x00, /* reserved */
         0x00 /* Control */
     },
-    10, /* Length of the command block */
+	10, /* Length of the command block */
     USB_MS_DIRECTION_IN, /* Transfer direction is IN */
     8, /* The length of data */
     8000UL /* Time out (ms) */
@@ -233,10 +233,10 @@ const MSCMD USB_MS_START_UNIT =
         SCSI_SSU_START, /* SSU */
         0x00 /* Control */
     },
-    6, /* Length of the command block */
+	6, /* Length of the command block */
     USB_MS_DIRECTION_IN, /* Transfer direction is IN */
     0, /* The length of data */
-    8000UL /* Time out (ms) */
+    250UL /* Time out (ms) */
 };
 
 const MSCMD USB_MS_STOP_UNIT =
@@ -248,10 +248,10 @@ const MSCMD USB_MS_STOP_UNIT =
         SCSI_SSU_EJECT, /* SSU */
         0x00 /* Control */
     },
-    6, /* Length of the command block */
+	6, /* Length of the command block */
     USB_MS_DIRECTION_IN, /* Transfer direction is IN */
     0, /* The length of data */
-    8000UL /* Time out (ms) */
+    250UL /* Time out (ms) */
 };
 
 const MSCMD USB_MS_WRITE_10 =
@@ -264,10 +264,10 @@ const MSCMD USB_MS_WRITE_10 =
         0x00, 0x01, /* Transfer length MSB-LSB in blocks*/
         0x00 /* Control */
     },
-    10, /* Length of the command block */
+	10, /* Length of the command block */
     USB_MS_DIRECTION_OUT, /* Transfer direction is OUT */
     512, /* The length of data (in bytes) - to be set */
-    8000UL /* Time out (ms) */
+    2000UL /* Time out (ms) */
 };
 
 const MSCMD USB_MS_SCSI_UNIT_READY =
@@ -280,10 +280,10 @@ const MSCMD USB_MS_SCSI_UNIT_READY =
         0x00, /* Reserved */
         0x00 /* Control */
     },
-    6, /* Length of the command block */
+	6, /* Length of the command block */
     USB_MS_DIRECTION_IN, /* Transfer direction is IN */
     0, /* The length of data - just get sense */
-    8000UL /* Time out (ms) */
+    2000UL /* Time out (ms) */
 };
 
 const MSCMD USB_MS_SCSI_INQUIRY =
@@ -295,10 +295,10 @@ const MSCMD USB_MS_SCSI_INQUIRY =
         0x00, 0x36, /* Allocation length */
         0x00 /* Control */
     },
-    6, /* Length of the command block */
+	6, /* Length of the command block */
     USB_MS_DIRECTION_IN, /* Transfer direction is IN */
     36, /* The length of data */
-    8000UL /* Time out (ms) */
+    250UL /* Time out (ms) */
 };
 
 const MSCMD USB_MS_SCSI_MODE_SENSE_6 =
@@ -311,10 +311,10 @@ const MSCMD USB_MS_SCSI_MODE_SENSE_6 =
         4, /* Allocation length */
         0x00 /* Control */
     },
-    6, /* Length of the command block */
+	6, /* Length of the command block */
     USB_MS_DIRECTION_IN, /* Transfer direction is IN */
     4, /* The length of data */
-    8000UL /* Time out (ms) */
+    250UL /* Time out (ms) */
 };
 
 const MSCMD USB_MS_SCSI_REQUEST_SENSE =
@@ -327,10 +327,10 @@ const MSCMD USB_MS_SCSI_REQUEST_SENSE =
         18, /* Allocation Length */
         0x00, /* Control */
     },
-    6, /* Length of the command block */
+	6, /* Length of the command block */
     USB_MS_DIRECTION_IN, /* Transfer direction is IN */
     18, /* The length of data */
-    8000UL /* Time out (ms) */
+    250UL /* Time out (ms) */
 };
 
 const MSCMD USB_MS_SCSI_PRVNT_REMOVAL =
@@ -342,10 +342,10 @@ const MSCMD USB_MS_SCSI_PRVNT_REMOVAL =
         0x00, /* Reserved */
         0x01, /* Control */
     },
-    5, /* Length of the command block */
+	5, /* Length of the command block */
     USB_MS_DIRECTION_IN, /* Transfer direction is IN */
     0, /* The length of data */
-    8000UL /* Time out (ms) */
+    250UL /* Time out (ms) */
 };
 
 const MSCMD USB_MS_SCSI_ALLW_REMOVAL =
@@ -357,10 +357,10 @@ const MSCMD USB_MS_SCSI_ALLW_REMOVAL =
         0x00, /* Reserved */
         0x00, /* Control */
     },
-    5, /* Length of the command block */
+	5, /* Length of the command block */
     USB_MS_DIRECTION_IN, /* Transfer direction is IN */
     0, /* The length of data */
-    8000UL /* Time out (ms) */
+    250UL /* Time out (ms) */
 };
 
 /******************************************************************************
@@ -676,9 +676,9 @@ int scsiModeSense (int iMsDev, int iLun, _Bool *pbfWriteProtect)
             *pbfWriteProtect = true;
         }
         else
-        {
+          {
             *pbfWriteProtect = false;
-        }
+          }
     }
     return SCSI_OK;
 }
@@ -745,6 +745,7 @@ int scsiRequestSense (int iMsDev, int iLun)
                  accessed */
             case SCSI_SENSE_MNP_BUS_RESET :
                 return SCSI_MEDIA_NOT_AVAILABLE;
+
         }
     }
     else
