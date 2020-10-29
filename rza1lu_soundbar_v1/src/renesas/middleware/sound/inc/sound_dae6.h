@@ -1,4 +1,4 @@
-/******************************************************************************
+/*******************************************************************************
 * DISCLAIMER
 * This software is supplied by Renesas Electronics Corporation and is only
 * intended for use with Renesas products. No other uses are authorized. This
@@ -18,51 +18,65 @@
 * you agree to the additional terms and conditions found by accessing the
 * following link:
 * http://www.renesas.com/disclaimer
-*******************************************************************************
-* Copyright (C) 2018 Renesas Electronics Corporation. All rights reserved.
+* Copyright (C) 2017 Renesas Electronics Corporation. All rights reserved.
+*******************************************************************************/
+/**************************************************************************//**
+* @file         sound_dae6.h
+* Rev: 
+* Date:: 2020
+* @brief        
+******************************************************************************/
 
-*******************************************************************************
-* File Name    : version.h
-* Device(s)    : RZ/A1LU
-* Tool-Chain   : GCC for Renesas RZ
-* OS           : FreeRTOS Version See src/freertos/include/FreeRTOS.h
-* H/W Platform : Stream it! v2 board
-* Description  : The version release and build numbers.
-*                build version
-*                APPLICATION_INFO_VERSION.APPLICATION_INFO_RELEASE.APPLICATION_INFO_BUILD
-*******************************************************************************
-* History      : DD.MM.YYYY Version Description
-*              : 05.08.2010 1.00    First Release
-*              : 12.02.2016 1.10    Release 1.1 - includes USB CDC Support
-*              : 25.01.2018 1.02    First Release
-*              : 20.07.2018 3.01    First Release GCC build with sound demo
+#ifndef SOUND_DAE6_H
+#define SOUND_DAE6_H
+/******************************************************************************
+Includes   <System Includes> , "Project Includes"
 ******************************************************************************/
 
 /******************************************************************************
-  WARNING!  IN ACCORDANCE WITH THE USER LICENCE THIS CODE MUST NOT BE CONVEYED
-  OR REDISTRIBUTED IN COMBINATION WITH ANY SOFTWARE LICENSED UNDER TERMS THE
-  SAME AS OR SIMILAR TO THE GNU GENERAL PUBLIC LICENCE
+Typedef definitions
 ******************************************************************************/
+typedef enum {
+	DAE_SPIN,
+	DAE_SPDIF,
+	DAE_ADC
+}input_t;
 
-#ifndef VERSION_H_INCLUDED
-#define VERSION_H_INCLUDED
+typedef enum {
+	DAE_COAXIAL,
+	DAE_OPTICAL
+} spdif_t;
 
+typedef struct {
+	spdif_t inputSelect;
+	input_t channel8;
+	input_t channel7;
+	input_t channel6;
+	input_t channel5;
+	input_t channel4;
+	input_t channel3;
+	input_t channel2;
+	input_t channel1;
+
+}dae_in_block_t;
 /******************************************************************************
 Macro definitions
 ******************************************************************************/
 
 /******************************************************************************
- * The following definitions are not surrounded by braces as the utility
- * buildinc does not recognise numbers surrounded in braces
+Imported global variables and functions (from other files)
 ******************************************************************************/
-#define APPLICATION_INFO_VERSION          3
-#define APPLICATION_INFO_RELEASE          1
-#define APPLICATION_INFO_BUILD            489
-
-
-
-#endif                              /* VERSION_H_INCLUDED */
 
 /******************************************************************************
-End  Of File
+Exported global variables and functions (to be accessed by other files)
 ******************************************************************************/
+
+/******************************************************************************
+Private global variables and functions
+******************************************************************************/
+/******************************************************************************
+Exported global functions (to be accessed by other files)
+******************************************************************************/
+
+
+#endif

@@ -13,13 +13,13 @@
 <option id="board" value="Custom User Board"/>
 </general>
 <tool id="Pins" version="1.0.1.0">
-<pinItem allocation="62" comments="" direction="None" id="RxD3" status="0"/>
-<pinItem allocation="63" comments="" direction="None" id="TxD3" status="0"/>
-<pinItem allocation="46" comments="" direction="None" id="SSIWS2" status="0"/>
+<pinItem allocation="" comments="" direction="None" id="RxD3" status="0"/>
+<pinItem allocation="" comments="" direction="None" id="TxD3" status="0"/>
+<pinItem allocation="" comments="" direction="None" id="SSIWS2" status="0"/>
 <pinItem allocation="38" comments="" direction="None" id="SSIWS0" status="0"/>
-<pinItem allocation="48" comments="" direction="None" id="SSIDATA2" status="0"/>
+<pinItem allocation="" comments="" direction="None" id="SSIDATA2" status="0"/>
 <pinItem allocation="33" comments="" direction="None" id="SSISCK0" status="0"/>
-<pinItem allocation="43" comments="" direction="None" id="SSISCK2" status="0"/>
+<pinItem allocation="" comments="" direction="None" id="SSISCK2" status="0"/>
 <pinItem allocation="41" comments="" direction="None" id="SSIRxD0" status="0"/>
 <pinItem allocation="40" comments="" direction="None" id="SSITxD0" status="0"/>
 <pinItem allocation="150" comments="" direction="None" id="RIIC0SDA" status="0"/>
@@ -34,8 +34,8 @@
 <pinItem allocation="122" comments="" direction="None" id="LCD0_DATA2" status="0"/>
 <pinItem allocation="19" comments="" direction="None" id="LCD0_DATA9" status="0"/>
 <pinItem allocation="17" comments="" direction="None" id="LCD0_DATA8" status="0"/>
-<pinItem allocation="28" comments="" direction="None" id="LCD0_DATA7" status="0"/>
-<pinItem allocation="27" comments="" direction="None" id="LCD0_DATA6" status="0"/>
+<pinItem allocation="133" comments="" direction="None" id="LCD0_DATA7" status="0"/>
+<pinItem allocation="132" comments="" direction="None" id="LCD0_DATA6" status="0"/>
 <pinItem allocation="26" comments="" direction="None" id="LCD0_DATA13" status="0"/>
 <pinItem allocation="31" comments="" direction="None" id="LCD0_DATA14" status="0"/>
 <pinItem allocation="32" comments="" direction="None" id="LCD0_DATA15" status="0"/>
@@ -45,6 +45,14 @@
 <pinItem allocation="55" comments="" direction="None" id="LCD0_CLK" status="0"/>
 <pinItem allocation="35" comments="" direction="None" id="LCD0_TCON2" status="0"/>
 <pinItem allocation="30" comments="" direction="None" id="LCD0_TCON1" status="0"/>
-<pinItem allocation="29" comments="" direction="None" id="LCD0_TCON0" status="0"/>
+<pinItem allocation="205" comments="" direction="None" id="LCD0_TCON0" status="0"/>
+<pinItem allocation="59" comments="" direction="None" id="LCD0_TCON6" status="0"/>
+<pinItem allocation="1" comments="" direction="None" id="LCD0_TCON3" status="0"/>
+<pinItem allocation="57" comments="" direction="None" id="LCD0_TCON5" status="0"/>
+<pinItem allocation="56" comments="" direction="None" id="LCD0_TCON4" status="0"/>
+<pinItem allocation="61" comments="" direction="None" id="SSIWS1" status="0"/>
+<pinItem allocation="60" comments="" direction="None" id="SSISCK1" status="0"/>
+<pinItem allocation="63" comments="" direction="None" id="SSIRxD1" status="0"/>
+<pinItem allocation="62" comments="" direction="None" id="SSITxD1" status="0"/>
 </tool>
 </smc>

@@ -111,7 +111,7 @@
 <intAttribute key="org.eclipse.cdt.debug.gdbjtag.core.delay" value="3"/>
 <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.doHalt" value="false"/>
 <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.doReset" value="false"/>
-<stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.imageFileName" value="C:\workspace\rza1lu_soundbar\rza1lu_soundbar_v1\HardwareDebug\rza1lu_soundbar_v1.elf"/>
+<stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.imageFileName" value="C:\workspace\rza1lu_soundbar\rza1lu_soundbar_v1\SoundTest1\rza1lu_soundbar_v1.elf"/>
 <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.imageOffset" value="0"/>
 <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.initCommands" value="set {short} 0xFCFE7224=0x00FC&#13;&#10;set {short} 0xFCFE3424=0x00FC&#13;&#10;set {short} 0xFCFE3524=0x00FC&#13;&#10;set {short} 0xFCFE7208=0xF000&#13;&#10;set {short} 0xFCFE3408=0xF000&#13;&#10;set {short} 0xFCFE3508=0xF000&#13;&#10;set {short} 0xFCFE3608=0xF000&#13;&#10;&#13;&#10;set {int} 0x3FEFA000=0x01AA4021&#13;&#10;set {int} 0x3FEFA010=0x00130000&#13;&#10;set {int} 0x3FEFA01C=0x00004F00&#13;&#10;set {int} 0x3FEFA00C=0x00010101&#13;&#10;set {int} 0x3FEFA014=0x00000001&#13;&#10;set {int} 0x3FEFA008=0x00000003"/>
 <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.loadImage" value="true"/>
@@ -122,7 +122,7 @@
 <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.setResume" value="false"/>
 <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.setStopAt" value="true"/>
 <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.stopAt" value="main"/>
-<stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.symbolsFileName" value="C:\workspace\rza1lu_soundbar\rza1lu_soundbar_v1\HardwareDebug\rza1lu_soundbar_v1.elf"/>
+<stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.symbolsFileName" value="C:\workspace\rza1lu_soundbar\rza1lu_soundbar_v1\SoundTest1\rza1lu_soundbar_v1.elf"/>
 <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.symbolsOffset" value="0"/>
 <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.useFileForImage" value="false"/>
 <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.useFileForSymbols" value="false"/>
@@ -135,7 +135,7 @@
 <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_START_MODE" value="remote"/>
 <booleanAttribute key="org.eclipse.cdt.launch.DEBUGGER_STOP_AT_MAIN" value="true"/>
 <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_STOP_AT_MAIN_SYMBOL" value="main"/>
-<stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="HardwareDebug/rza1lu_soundbar_v1.elf"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="SoundTest1/rza1lu_soundbar_v1.elf"/>
 <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="rza1lu_soundbar_v1"/>
 <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="false"/>
 <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value=""/>

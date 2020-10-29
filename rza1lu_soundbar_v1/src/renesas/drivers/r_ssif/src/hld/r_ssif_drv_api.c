@@ -48,10 +48,12 @@
 #include "ssif.h"
 #include "dev_drv.h"
 #include "dma_if.h"
+#include "sound_if.h"
 
 /* Adding this dependency ensures that this file is built every time because of the build counter */
 #include "version.h"
 
+#define SSIC_CHANNEL SSIF_CHNUM_1
 /*****************************************************************************
  Function Prototypes
  ******************************************************************************/
@@ -118,7 +120,7 @@ static int_t ssif_open (st_stream_ptr_t pStream)
     }
 
     /* Configure SSIF Channel 0. 4 channels available (0-3) */
-    configure_ssif_channel(SSIF_CHNUM_0);
+    configure_ssif_channel(SSIC_CHANNEL);
 
     /* get access to channel to enable it */
     if (false == R_OS_WaitForSemaphore( &gsp_info_ch->sem_access, R_OS_ABSTRACTION_PRV_EV_WAIT_INFINITE))
@@ -597,14 +599,14 @@ static int_t configure_ssif_channel (int_t channel)
 {
     ssif_info_drv_t *p_info_drv;
     int_t ecrd = DEVDRV_SUCCESS;
-
+#if 0
     gs_ssif_cfg[channel].enabled = true;
     gs_ssif_cfg[channel].int_level = ISR_SSIF_IRQ_PRIORITY;
     gs_ssif_cfg[channel].slave_mode = false;
     gs_ssif_cfg[channel].sample_freq = 44100u;
     gs_ssif_cfg[channel].clk_select = SSIF_CFG_CKS_AUDIO_X1;
     gs_ssif_cfg[channel].multi_ch = SSIF_CFG_MULTI_CH_1;
-    gs_ssif_cfg[channel].data_word = SSIF_CFG_DATA_WORD_16;
+    gs_ssif_cfg[channel].data_word = SSIF_CFG_DATA_WORD_24;
     gs_ssif_cfg[channel].system_word = SSIF_CFG_SYSTEM_WORD_32;
     gs_ssif_cfg[channel].bclk_pol = SSIF_CFG_FALLING;
     gs_ssif_cfg[channel].ws_pol = SSIF_CFG_WS_LOW;
@@ -614,7 +616,24 @@ static int_t configure_ssif_channel (int_t channel)
     gs_ssif_cfg[channel].ws_delay = SSIF_CFG_DELAY;
     gs_ssif_cfg[channel].noise_cancel = SSIF_CFG_DISABLE_NOISE_CANCEL;
     gs_ssif_cfg[channel].tdm_mode = SSIF_CFG_DISABLE_TDM;
-
+#else
+    gs_ssif_cfg[channel].enabled = true;
+    gs_ssif_cfg[channel].int_level = ISR_SSIF_IRQ_PRIORITY;
+    gs_ssif_cfg[channel].slave_mode = false;
+    gs_ssif_cfg[channel].sample_freq = SOUND_FREQ_48000;
+    gs_ssif_cfg[channel].clk_select = SSIF_CFG_CKS_AUDIO_X1;
+    gs_ssif_cfg[channel].multi_ch = SSIF_CFG_MULTI_CH_1;
+    gs_ssif_cfg[channel].data_word = SSIF_CFG_DATA_WORD_24;
+    gs_ssif_cfg[channel].system_word = SSIF_CFG_SYSTEM_WORD_32;
+    gs_ssif_cfg[channel].bclk_pol = SSIF_CFG_FALLING;
+    gs_ssif_cfg[channel].ws_pol = SSIF_CFG_WS_LOW;
+    gs_ssif_cfg[channel].padding_pol = SSIF_CFG_PADDING_LOW;
+    gs_ssif_cfg[channel].serial_alignment = SSIF_CFG_DATA_FIRST;
+    gs_ssif_cfg[channel].parallel_alignment = SSIF_CFG_LEFT;
+    gs_ssif_cfg[channel].ws_delay = SSIF_CFG_DELAY;
+    gs_ssif_cfg[channel].noise_cancel = SSIF_CFG_DISABLE_NOISE_CANCEL;
+    gs_ssif_cfg[channel].tdm_mode = SSIF_CFG_DISABLE_TDM;
+#endif
     /* initialise driver data structures */
     p_info_drv = ssif_init( &gs_ssif_cfg, NULL);
 

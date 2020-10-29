@@ -43,6 +43,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <r_soundtest1.h>
 #include <unistd.h>
 
 #include "r_typedefs.h"
@@ -56,10 +57,10 @@
 /* GNU Compiler settings */
 #include "compiler_settings.h"
 
+#include "mcu_board_select.h"
+
 /* Sound API */
-#include "r_soundbar_app.h"
 #include "sound_if.h"
-#include "r_soundbar.h"
 #include "r_ssif_drv_api.h"
 #include "ssif.h"
 
@@ -81,6 +82,10 @@
 #define REC_DMA_SIZE_PRV_                   (512)
 #define SIZEOF_WAVEDATA_RECPLAY_PRV_        (REC_DMA_SIZE_PRV_ * NUM_AUDIO_BUFFER_BLOCKS_PRV_)
 
+#define SSIC_CHANNEL	"ssif1"
+/* SSIF Channel */
+#define STREAM_IT_SOUND_CHANNEL_PRV_        (0)
+
 /* Comment this line out to turn ON module trace in this file */
 /* #undef _TRACE_ON_ */
 
@@ -90,7 +95,7 @@
 #endif
 
 /* SSIF Channel */
-#define STREAM_IT_SOUND_CHANNEL_PRV_        (0)
+#define SOUUND_BAR_INTERFACE_CH        (0)
 
 /*******************************************************************************
  Typedef definitions
@@ -103,6 +108,7 @@ typedef struct st_sound_config_t
 
     event_t  task_play;
     event_t  task_stop;
+    event_t  task_trackdone;
 
     uint8_t  *p_playback_data; /* ptr to play back buffer */
     uint8_t  *p_record_data; /* ptr to record buffer */
@@ -112,7 +118,6 @@ typedef struct st_sound_config_t
 
     uint32_t ul_delaytime_ms;
 
-    QueueHandle_t track_queue;
 } st_sound_config_t;
 
 typedef st_sound_config_t *p_sound_config_t;
@@ -133,10 +138,14 @@ static st_sound_config_t gs_sound_t;
 static p_sound_config_t gsp_sound_control_t;
 
 static void task_play_sound_demo (void *parameters);
-static void task_record_sound_demo (void *parameters);
+static void task_playback_sound_demo (void *parameters);
+
+static void initalize_control_if ( void );
 static int32_t configure_audio (void);
 static void close_audio (void);
 
+static void setup_playsample (FILE *p_in, FILE *p_out, void *p_data);
+static void setup_playback (FILE *p_in, FILE *p_out);
 static bool_t AnalyzeHeader(uint8_t * p_title, uint8_t * p_artist, uint8_t * p_album, uint16_t tag_size, FIL * fp);
 static size_t GetNextData(void *buf, size_t len);
 
@@ -175,7 +184,7 @@ static uint8_t m_wk_wavfile_buff[FILE_READ_BUFF_SIZE];
  * Arguments    : none
  * Return Value : none
  **********************************************************************************************************************/
-static void initalize_control_if ( QueueHandle_t q )
+static void initalize_control_if ( void )
 {
     if (0 == gsp_sound_control_t->initialised)
     {
@@ -189,11 +198,10 @@ static void initalize_control_if ( QueueHandle_t q )
         gsp_sound_control_t->playback_semaphore = 0;
         gsp_sound_control_t->record_semaphore = 0;
 
-        gsp_sound_control_t->track_queue = q;
-
         R_OS_CreateEvent( &gsp_sound_control_t->task_running);
         R_OS_CreateEvent( &gsp_sound_control_t->task_play);
         R_OS_CreateEvent( &gsp_sound_control_t->task_stop);
+        R_OS_CreateEvent( &gsp_sound_control_t->task_trackdone);
 
     }
 }
@@ -217,33 +225,14 @@ static void task_play_sound_demo (void *parameters)
     R_OS_ResetEvent( &gsp_sound_control_t->task_play);
     R_OS_ResetEvent( &gsp_sound_control_t->task_stop);
 
-    /* Cast into FILE assuming FILE is passed int void R_OS_CreateTask() in R_SOUND_PlaySample() */
+    /* Cast into FILE assuming FILE is passed int void R_OS_CreateTask() in r_soundtst_PlaySample() */
     FILE *p_out = (FILE *) (parameters);
 
     /* open SSIF driver for read and write */
-    gs_ssif_handle = open(DEVICE_INDENTIFIER "ssif0", O_WRONLY);
+    gs_ssif_handle = open(DEVICE_INDENTIFIER SSIC_CHANNEL, O_WRONLY);
 
     /* initialise SSIF and Sound driver for audio streaming */
     res = configure_audio();
-
-    /* Sound - set sampling rate */
-    if (DEVDRV_SUCCESS == res)
-    {
-        res = R_SOUND_SetSamplingRate(STREAM_IT_SOUND_CHANNEL_PRV_, SOUND_FREQ_22050);
-    }
-
-    /* Sound - set Volume in percent */
-    if (DEVDRV_SUCCESS == res)
-    {
-        res = R_SOUND_SetVolume(STREAM_IT_SOUND_CHANNEL_PRV_, SOUND_MIC_VOL_40_PERCENT);
-    }
-
-    /* Sound - Set Microphone Volume in percent */
-    if (DEVDRV_SUCCESS == res)
-    {
-        res = R_SOUND_SetMicVolume(STREAM_IT_SOUND_CHANNEL_PRV_, SOUND_MIC_VOL_40_PERCENT);
-    }
-
 
 
     if (DEVDRV_SUCCESS == res)
@@ -291,21 +280,17 @@ static void task_play_sound_demo (void *parameters)
 
                     write(gs_ssif_handle, &m_wk_wavfile_buff[0], WAVE_DMA_SIZE_PRV_);
 					
-					
-					/* Send the Wave File tracking info */
-					track = (uint32_t)((loop / wave_length) * 100);
-					xQueueSend ( gsp_sound_control_t->track_queue, (void*)&track, 0);
                 }
 
                 /* Waiting complete request #0to#(N-2) */
                 R_OS_WaitForSemaphore( &gsp_sound_control_t->playback_semaphore, R_OS_ABSTRACTION_PRV_EV_WAIT_INFINITE);
             }
+            R_OS_SetEvent( &gsp_sound_control_t->task_trackdone );
+
             R_OS_ResetEvent( &gsp_sound_control_t->task_play);
             f_lseek( m_wav_fp, 0);
             AnalyzeHeader(NULL, NULL, NULL, 0, m_wav_fp);
-			track = 0;
-			xQueueSend ( gsp_sound_control_t->track_queue, (void*)&track, 0);
-            //f_lseek( m_wav_fp, m_fp_pos);
+
         }
 
 		R_OS_DeleteEvent(&gsp_sound_control_t->task_stop);
@@ -323,13 +308,13 @@ static void task_play_sound_demo (void *parameters)
  **********************************************************************************************************************/
 
 /***********************************************************************************************************************
- * Function Name: task_record_sound_demo
+ * Function Name: task_playback_sound_demo
  * Description  : This task records from the MIC connector on the board and plays the received audio back to the
  *                LINE OUT
  * Arguments    : void *parameters - task parameter - not used
  * Return Value : void
  **********************************************************************************************************************/
-static void task_record_sound_demo (void *parameters)
+static void task_playback_sound_demo (void *parameters)
 {
     uint32_t div;
     uint32_t txi_data = 0;
@@ -345,7 +330,7 @@ static void task_record_sound_demo (void *parameters)
     /* unused argument */
     UNUSED_PARAM(parameters);
 
-    /* populate transmit aiocb message blocks as part of this initialisation process (but not sending yet) */
+    /* populate transmit aiocb message blocks as part of this initialization process (but not sending yet) */
     for (loop = 0u; loop < NUM_AUDIO_BUFFER_BLOCKS_PRV_; loop++)
     {
         /* register access semaphore */
@@ -460,8 +445,98 @@ static void task_record_sound_demo (void *parameters)
     }
 }
 /***********************************************************************************************************************
- End of function task_record_sound_demo
+ End of function task_playback_sound_demo
  **********************************************************************************************************************/
+
+/***********************************************************************************************************************
+ * Function Name: r_soundtst_PlaySample_init
+ * Description  : Play Sound application task
+ Play pre-recorded sound sample (LR_44_1K16B_S.dat)
+ * Arguments    : FILE * pIn  Standard input from console.
+ *                FILE * pOut Standard output to console
+ * Return Value : none
+ ***********************************************************************************************************************/
+void r_soundtst_PlaySample_init ( void )
+{
+    // int_t i_in = R_DEVLINK_FilePtrDescriptor(p_in);
+
+    /* set control structure pointer to holding structure */
+    gsp_sound_control_t = &gs_sound_t;
+
+    /* initialise the control structure for this group of applications */
+    initalize_control_if(  );
+
+    if ( !gsp_sound_control_t->inuse)
+    {
+        gsp_sound_control_t->inuse = true;
+
+        setup_playsample(NULL, NULL, 0 /* LR_44_1K16B_S */);
+
+        gsp_sound_control_t->inuse = false;
+    }
+
+}
+/***********************************************************************************************************************
+ End of function task_playback_sound_demo
+ **********************************************************************************************************************/
+/***********************************************************************************************************************
+ * Function Name: r_soundtst_PlayBack_init
+ * Description  : Run the record/playback Sound application
+ * Arguments    : FILE * pIn  Standard input from console.
+ *                FILE * pOut Standard output to console
+ * Return Value : none
+ ***********************************************************************************************************************/
+void r_soundtst_PlayBack_init ( void )
+{
+
+    /* set control structure pointer to holding structure */
+    gsp_sound_control_t = &gs_sound_t;
+
+    /* initialise the control structure for this group of applications */
+    initalize_control_if();
+
+    /* only run demo if audio is not in use */
+    if ( !gsp_sound_control_t->inuse)
+    {
+        gsp_sound_control_t->inuse = true;
+
+        setup_playback(NULL, NULL);
+
+        gsp_sound_control_t->inuse = false;
+    }
+    else
+    {
+        // fprintf(p_out, "SSIF in use can not complete command\r\n");
+    }
+}
+/***********************************************************************************************************************
+ End of function r_soundtst_PlayBack_init
+ **********************************************************************************************************************/
+
+
+void r_soundtst_PlaySample (void)
+{
+    R_OS_SetEvent( &gsp_sound_control_t->task_play);
+}
+
+void r_soundtst_IsDone(void) {
+	R_OS_ResetEvent(&gsp_sound_control_t->task_stop);
+	R_OS_WaitForEvent( &gsp_sound_control_t->task_stop, R_OS_ABSTRACTION_PRV_EV_WAIT_INFINITE);
+}
+
+void r_soundtst_StopSample (void)
+{
+    R_OS_SetEvent( &gsp_sound_control_t->task_trackdone);
+}
+
+int r_soundtst_LoadSample (FIL* fp ) {
+	if ( fp != 0) {
+		AnalyzeHeader(NULL, NULL, NULL, 0, fp);
+	} else {
+		m_wav_fp = NULL;
+	}
+	return 0;
+}
 
 /***********************************************************************************************************************
  * Function Name: play_file_data
@@ -469,7 +544,7 @@ static void task_record_sound_demo (void *parameters)
  * Arguments    :
  * Return Value :
  **********************************************************************************************************************/
-static void play_file_data (FILE *p_in, FILE *p_out, void *p_data)
+static void setup_playsample (FILE *p_in, FILE *p_out, void *p_data)
 {
     bool_t user_abort = false;
     os_task_t *p_task = 0;
@@ -492,74 +567,21 @@ static void play_file_data (FILE *p_in, FILE *p_out, void *p_data)
  End of function play_file_data
  **********************************************************************************************************************/
 
-void R_SOUND_PlaySample (void)
-{
-    R_OS_SetEvent( &gsp_sound_control_t->task_play);
-}
-
-void R_SOUND_StopSample (void)
-{
-    R_OS_SetEvent( &gsp_sound_control_t->task_stop);
-}
 /***********************************************************************************************************************
- * Function Name: R_SOUND_PlaySample
- * Description  : Play Sound application task
- Play pre-recorded sound sample (LR_44_1K16B_S.dat)
- * Arguments    : FILE * pIn  Standard input from console.
- *                FILE * pOut Standard output to console
- * Return Value : none
- ***********************************************************************************************************************/
-void R_SOUND_PlaySample_init ( QueueHandle_t q_AudioTrack )
-{
-    // int_t i_in = R_DEVLINK_FilePtrDescriptor(p_in);
-
-    /* set control structure pointer to holding structure */
-    gsp_sound_control_t = &gs_sound_t;
-
-    /* initialise the control structure for this group of applications */
-    initalize_control_if( q_AudioTrack );
-
-    if ( !gsp_sound_control_t->inuse)
-    {
-        gsp_sound_control_t->inuse = true;
-
-        play_file_data(NULL, NULL, 0 /* LR_44_1K16B_S */);
-
-        gsp_sound_control_t->inuse = false;
-    }
-
-}
-/***********************************************************************************************************************
- End of function R_SOUND_PlaySample
- **********************************************************************************************************************/
-int R_SOUND_LoadSample (FIL* fp ) {
-	if ( fp != 0) {
-		AnalyzeHeader(NULL, NULL, NULL, 0, fp);
-	} else {
-		m_wav_fp = NULL;
-	}
-	return 0;
-}
-/***********************************************************************************************************************
- * Function Name: play_recorded
+ * Function Name: setup_playback
  * Description  : Setup and run record/playback demo
  * Arguments    : FILE * pIn  Standard input from console.
  *                FILE * pOut Standard output to console
  * Return Value : none
  ***********************************************************************************************************************/
-static void play_recorded (FILE *p_in, FILE *p_out)
+static void setup_playback ( FILE *p_in, FILE *p_out )
 {
     bool_t user_abort = false;
     os_task_t *p_task = 0;
     void *p_wavebuf_non_aligned;
     int32_t res = DEVDRV_SUCCESS;
 
-    int_t i_in = R_DEVLINK_FilePtrDescriptor(p_in);
 
-    /* May be required later */
-    UNUSED_PARAM(p_in);
-
-    fprintf(p_out, "Play/record sample program start\r\n");
 
     /* setup record/playback buffers */
     p_wavebuf_non_aligned = R_OS_AllocMem(
@@ -570,7 +592,6 @@ static void play_recorded (FILE *p_in, FILE *p_out)
     if (NULL == p_wavebuf_non_aligned)
     {
         res = DEVDRV_ERROR;
-        fprintf(p_out, "Sound sample could not allocate memory for buffer\r\n");
     }
 
     else
@@ -606,11 +627,11 @@ static void play_recorded (FILE *p_in, FILE *p_out)
         if (DEVDRV_SUCCESS == res)
         {
             /* open SSIF driver for read and write */
-            gs_ssif_handle = open(DEVICE_INDENTIFIER "ssif", O_RDWR);
+            gs_ssif_handle = open(DEVICE_INDENTIFIER SSIC_CHANNEL, O_RDWR);
 
             if (0 >= gs_ssif_handle)
             {
-                fprintf(p_out, "Could not open ssif driver\r\n");
+                // fprintf(p_out, "Could not open ssif driver\r\n");
                 res = DEVDRV_ERROR;
             }
         }
@@ -620,7 +641,7 @@ static void play_recorded (FILE *p_in, FILE *p_out)
         {
             res = configure_audio();
         }
-
+#if (TARGET_BOARD == TARGET_BOARD_STREAM_IT2 && RENESAS_BOARD == 1)
         /* Sound - set sampling rate */
         if (DEVDRV_SUCCESS == res)
         {
@@ -630,109 +651,32 @@ static void play_recorded (FILE *p_in, FILE *p_out)
         /* Sound - set Volume in percent */
         if (DEVDRV_SUCCESS == res)
         {
-            res = R_SOUND_SetVolume(STREAM_IT_SOUND_CHANNEL_PRV_, 40);
+            res = R_SOUND_SetVolume(STREAM_IT_SOUND_CHANNEL_PRV_, SOUND_MIC_VOL_40_PERCENT);
         }
 
         /* Sound - Set Microphone Volume in percent */
         if (DEVDRV_SUCCESS == res)
         {
-            res = R_SOUND_SetMicVolume(STREAM_IT_SOUND_CHANNEL_PRV_, 40);
+            res = R_SOUND_SetMicVolume(STREAM_IT_SOUND_CHANNEL_PRV_, SOUND_MIC_VOL_40_PERCENT);
         }
+        R_OS_TaskSleep(2000);
+#endif
 
         if (DEVDRV_SUCCESS == res)
         {
-            fprintf(p_out, "Press any key to terminate demo\r\n");
+            // fprintf(p_out, "Press any key to terminate demo\r\n");
 
             /* Create play task (to normalise calling task) */
-            p_task = R_OS_CreateTask("rec sound", task_record_sound_demo, p_out,
+            p_task = R_OS_CreateTask("rec sound", task_playback_sound_demo, p_out,
             R_OS_ABSTRACTION_PRV_SMALL_STACK_SIZE,
             TASK_RECORD_SOUND_APP_PRI);
+		}
 
-            if (p_task)
-            {
-                while (true != user_abort)
-                {
-                    R_OS_TaskSleep(5);
-
-                    /* If a console key has been pressed or task has completed then quit */
-                    if (control(i_in, CTL_GET_RX_BUFFER_COUNT, NULL) != 0)
-                    {
-                        user_abort = true;
-
-                        /* set task quit event to signal to created task to stop */
-                        /* Note this "rec sound" task will delete itself once de-initialised */
-                        R_OS_ResetEvent( &gsp_sound_control_t->task_running);
-                        fprintf(p_out, "record sample user quit\r\n");
-                        fgetc(p_in);
-                    }
-                }
-            }
-            fprintf(p_out, "Record Sound sample complete\r\n");
-
-            /* close down audio operations */
-            close_audio();
-
-            /* Delete the record/playback task */
-            R_OS_DeleteTask(p_task);
-        }
-
-        /* Ensure that the record control semaphore is deleted */
-        R_OS_DeleteSemaphore((semaphore_t) &(gsp_sound_control_t->record_semaphore));
-
-        /* Free memory buffer used for recording/playback */
-        R_OS_FreeMem(p_wavebuf_non_aligned);
-
-        /* demo quitting */
-        R_OS_ResetEvent( &gsp_sound_control_t->task_running);
     }
 }
 /*******************************************************************************
- End of function play_recorded
+ End of function setup_playback
  ******************************************************************************/
-
-/***********************************************************************************************************************
- * Function Name: R_SOUND_RecordSample
- * Description  : Run the record/playback Sound application
- * Arguments    : FILE * pIn  Standard input from console.
- *                FILE * pOut Standard output to console
- * Return Value : none
- ***********************************************************************************************************************/
-void R_SOUND_RecordSample (FILE *p_in, FILE *p_out)
-{
-    int_t i_in = R_DEVLINK_FilePtrDescriptor(p_in);
-
-    /* May be required later */
-    UNUSED_PARAM(p_in);
-
-    /* flush any remaining input */
-    while (control(i_in, CTL_GET_RX_BUFFER_COUNT, NULL) != 0)
-    {
-        fgetc(p_in);
-    }
-
-    /* set control structure pointer to holding structure */
-    gsp_sound_control_t = &gs_sound_t;
-
-    /* initialise the control structure for this group of applications */
-    initalise_control_if();
-
-    /* only run demo if audio is not in use */
-    if ( !gsp_sound_control_t->inuse)
-    {
-        gsp_sound_control_t->inuse = true;
-
-        play_recorded(p_in, p_out);
-
-        gsp_sound_control_t->inuse = false;
-    }
-    else
-    {
-        fprintf(p_out, "SSIF in use can not complete command\r\n");
-    }
-}
-/***********************************************************************************************************************
- End of function R_SOUND_RecordSample
- **********************************************************************************************************************/
 
 /*******************************************************************************
  * Function Name: configure_audio
@@ -745,13 +689,24 @@ static int32_t configure_audio (void)
 {
     int32_t res = DEVDRV_ERROR;
 
-    /* Initialize SOUND module */
+    /* Initialize SOUND module over i2c*/
     /* ignore error because i2c is shared with touch */
-    R_SOUND_Init();
+#if ( TARGET_BOARD == TARGET_BOARD_STREAM_IT2 && RENESAS_BOARD == 1)
+	/* Initialise SOUND module */
+    res = R_SOUND_Init();
+#else
+    //r_soundtst_Init();
+#endif
 
-    /* Open SOUND */
-    res = R_SOUND_Open(STREAM_IT_SOUND_CHANNEL_PRV_);
-
+    /* Open SOUND i2s interface */
+	if (DEVDRV_SUCCESS == res)
+    {
+#if ( TARGET_BOARD == TARGET_BOARD_STREAM_IT2 && RENESAS_BOARD == 1)
+		res = R_SOUND_Open(STREAM_IT_SOUND_CHANNEL_PRV_);
+#else
+    	res = R_SOUND_Open(SOUUND_BAR_INTERFACE_CH);
+#endif
+	}
 
     /* return status of operation */
     return (res);
@@ -769,10 +724,10 @@ static int32_t configure_audio (void)
 static void close_audio (void)
 {
     /* Close DAC */
-    R_SOUND_Close(STREAM_IT_SOUND_CHANNEL_PRV_);
+	R_SOUND_Close(SOUUND_BAR_INTERFACE_CH);
 
     /* De-Init Sound driver */
-    R_SOUND_UnInit();
+    //r_soundtst_UnInit();
 
     /* stop SSIF driver */
     close(gs_ssif_handle);

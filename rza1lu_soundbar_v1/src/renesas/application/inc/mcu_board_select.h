@@ -40,7 +40,9 @@
 /* Board Lineup */
 #define TARGET_BOARD_RSK        (0x000A0002)
 #define TARGET_BOARD_STREAM_IT2 (0x00030002)
+#define TARGET_BOARD_SOUNDBAR   (0x00030003)
 
+#define RENESAS_BOARD			0
 /* User Select macro */
 #define TARGET_RZA1             (TARGET_RZA1LU)
 #define TARGET_BOARD            (TARGET_BOARD_STREAM_IT2)

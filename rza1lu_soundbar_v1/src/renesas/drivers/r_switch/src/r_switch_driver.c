@@ -50,6 +50,9 @@
 #include "r_switch_driver.h"
 #include "r_task_priority.h"
 #include "r_compiler_abstraction_api.h"
+#include "r_switch_driver.h"
+
+
 
 /*******************************************************************************
  Macro definitions
@@ -77,10 +80,10 @@ static void mtu_int_gfa (uint32_t int_sense);
 volatile uint8_t g_switch_press_flg = 0u;
 
 /* Switch press call-back pointer declaration */
-static void (*g_switch_press_callback_func) (void) = 0;
+static void (*g_switch_press_callback_func[4]) (void) = {0,0,0,0};
 
 /* Switch release call-back pointer declaration */
-static void (*g_switch_release_callback_func) (void) = 0;
+static void (*g_switch_release_callback_func[4]) (void) = {0,0,0,0};
 
 /***********************************************************************************************************************
  Private global variables and functions
@@ -93,10 +96,11 @@ static void (*g_switch_release_callback_func) (void) = 0;
  true -  Switch is Interrupt Driven
  Return value:  None
  *****************************************************************************/
-void R_SWITCH_Init (bool_t interrupt)
+void R_SWITCH_Init (PinName pin, void (* func)(uint32_t int_sense))
 {
-    if (interrupt)  // Interrupt driven
+    if (func != NULL)  // Interrupt driven
     {
+#if 0
         /* Set SWITCH USER (IRQ5) as input pin (P7_9) */
         rza_io_reg_write_16(&GPIO.PBDC7, 1, GPIO_PBDC7_PBDC79_SHIFT, GPIO_PBDC7_PBDC79);
         rza_io_reg_write_16(&GPIO.PM7, 1, GPIO_PM7_PM79_SHIFT, GPIO_PM7_PM79);
@@ -118,12 +122,45 @@ void R_SWITCH_Init (bool_t interrupt)
         R_INTC_SetPriority(INTC_ID_IRQ5, ISR_SWITCH_IRQ_PRIORITY);
 
         R_INTC_Enable(INTC_ID_IRQ5);
+#else
+        st_port_init_config_t sw = { 0, 1, {0, FUNCTION_MODE2, PIN_INPUT}};
+        int irq = 0xFF;
 
-        /* Initialise MTU2 channel 4 used to de-bounce switches */
+        sw.p_config_table->pin = pin;
+        set_pin_function(&sw);
+
+        switch ( pin ) {
+        	case P1_8 :
+        		irq = INTC_ID_IRQ0;
+        	case P1_9 :
+        	    irq = INTC_ID_IRQ1;
+        	case P1_10 :
+        	    irq = INTC_ID_IRQ2;
+        	case P1_11 :
+        	    irq = INTC_ID_IRQ3;
+        	case P1_12 :
+        	    irq = INTC_ID_IRQ4;
+        	default:
+        		irq = 0xFF;
+
+        }
+        if ( irq >= INTC_ID_IRQ0 && irq <= INTC_ID_IRQ4) {
+        /* Configure and enable IRQ5 interrupts received from the user switch */
+			R_INTC_Disable(irq);
+			R_INTC_RegistIntFunc(irq, &int_irq_switch);
+			R_SWITCH_SetPressCallback( irq, func);
+			R_INTC_SetPriority(irq, ISR_SWITCH_IRQ_PRIORITY);
+
+			R_INTC_Enable(INTC_ID_IRQ5);
+
+        }
+#endif
+        /* Initialize MTU2 channel 4 used to de-bounce switches */
         init_switch_debounce_timer();
     }
     else  // Classic polled button
     {
+#if 0
         /* Configure SW1 (P7_9) as an input */
         rza_io_reg_write_16(&GPIO.PIBC7, 0, GPIO_PIBC7_PIBC79_SHIFT, GPIO_PIBC7_PIBC79);
         rza_io_reg_write_16(&GPIO.PBDC7, 0, GPIO_PIBC7_PIBC79_SHIFT, GPIO_PIBC7_PIBC79);
@@ -131,6 +168,10 @@ void R_SWITCH_Init (bool_t interrupt)
         rza_io_reg_write_16(&GPIO.PMC7, 0, GPIO_PMC7_PMC79_SHIFT, GPIO_PMC7_PMC79);
         rza_io_reg_write_16(&GPIO.PIPC7, 1, 9u, 0x200u);
         rza_io_reg_write_16(&GPIO.PIBC7, 1, GPIO_PIBC7_PIBC79_SHIFT, GPIO_PIBC7_PIBC79);
+#else
+        gpio_init(pin);
+        gpio_dir(pin, PIN_INPUT);
+#endif
     }
 }
 /*****************************************************************************
@@ -146,12 +187,12 @@ void R_SWITCH_Init (bool_t interrupt)
  *              :                    : INTC_EDGE_TRIGGER    : Edge trigger
  * Return Value : none
  *******************************************************************************/
-static void int_irq_switch (uint32_t sense)
+static void int_irq_switch (uint32_t irq)
 {
-    (void) sense;
+    uint8_t mask = 0;
     uint16_t dummy_read;
 
-    R_INTC_Disable(INTC_ID_IRQ5);
+    R_INTC_Disable(irq);
 
     /* Set the user switch flag to indicate switch was pressed */
     g_switch_press_flg |= true;
@@ -160,22 +201,23 @@ static void int_irq_switch (uint32_t sense)
     switch_debounce_delay();
 
     /* Check if switch press call-back function is not NULL */
-    if (g_switch_press_callback_func)
+    if (g_switch_press_callback_func[irq])
     {
         /* Execute user call-back function */
-        g_switch_press_callback_func();
+        g_switch_press_callback_func[irq]();
     }
 
     /* Clearing the status flag requires a dummy read */
     dummy_read = INTC.IRQRR;
 
-    /* Clear IRQ3/5 interrupt flag  */
-    if (0u != (dummy_read & 0x0020))
-    {
-        INTC.IRQRR &= 0xFFDF;
-    }
+    if ( irq < INTC_ID_IRQ5 )
+    	mask = 1 << irq;
 
-    R_INTC_Enable(INTC_ID_IRQ5);
+    /* Clear IRQ3/5 interrupt flag  */
+    INTC.IRQRR &= mask;
+
+
+    R_INTC_Enable(irq);
 }
 /*******************************************************************************
  * End of Function int_irq_switch
@@ -189,10 +231,10 @@ static void int_irq_switch (uint32_t sense)
  * Arguments    : void (* func)(uint32_t) : Function to be called by the IRQ
  * Return Value : none
  *******************************************************************************/
-void R_SWITCH_SetPressCallback (void (*func) (void))
+void R_SWITCH_SetPressCallback (int irq, void (*func) (void))
 {
     /* Store the call-back function pointer into the global variable */
-    g_switch_press_callback_func = func;
+    g_switch_press_callback_func[irq] = func;
 }
 /*****************************************************************************
  End of function  R_SWITCH_SetPressCallback
@@ -206,10 +248,10 @@ void R_SWITCH_SetPressCallback (void (*func) (void))
  * Argument      : pointer to call-back function (set to NULL to disable)
  * Return value  : none
  *******************************************************************************/
-void R_SWITCH_SetReleaseCallback (void (*callback) (void))
+void R_SWITCH_SetReleaseCallback (int irq, void (*callback) (void))
 {
     /* Store the callback function pointer into the global variable */
-    g_switch_release_callback_func = callback;
+    g_switch_release_callback_func[irq] = callback;
 }
 /*****************************************************************************
  End of function  R_SWITCH_SetReleaseCallback

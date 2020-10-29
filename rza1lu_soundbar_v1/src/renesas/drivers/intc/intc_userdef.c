@@ -826,7 +826,7 @@ uint32_t ulInterruptID;
    if(ulInterruptID < INTC_ID_TOTAL)
    {
       /* Call the function installed in the array of installed handler functions. */
-      intc_func_table[ ulInterruptID ]( 0 );
+      intc_func_table[ ulInterruptID ]( ulInterruptID );
    }
 }
 

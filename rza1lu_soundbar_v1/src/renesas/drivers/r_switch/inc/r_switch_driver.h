@@ -58,6 +58,8 @@
  *****************************************************************************/
 
 #include "r_typedefs.h"
+#include "r_gpio_if.h"
+#include "r_port_if.h"
 
 /***********************************************************************************************************************
  Macro definitions
@@ -87,7 +89,7 @@ extern volatile uint8_t g_switch_press_flg;
  *                       True -  Switch is Interrupt Driven. <BR>
  * @return None.
  */
-void R_SWITCH_Init (bool_t interrupt);
+void R_SWITCH_Init (PinName pin, void (* func)(uint32_t int_sense) );
 
 /**
  * @brief       Takes a pointer to a function, and sets it as the call-back
@@ -98,7 +100,7 @@ void R_SWITCH_Init (bool_t interrupt);
  *
  * @retrun None.
  */
-void R_SWITCH_SetPressCallback (void (*func) (void));
+void R_SWITCH_SetPressCallback (int irq, void (*func) (void));
 
 /**
  * @brief       Takes a pointer to a function, and sets it as the call-back
@@ -107,7 +109,7 @@ void R_SWITCH_SetPressCallback (void (*func) (void));
  *
  * @param[in]   callback: Pointer to call-back function (set to NULL to disable)
  */
-void R_SWITCH_SetReleaseCallback (void (*callback) (void));
+void R_SWITCH_SetReleaseCallback (int irq, void (*callback) (void));
 
 #endif /* R_SW_PKG_93_SWITCH_API_H_INCLUDED */
 /**************************************************************************//**

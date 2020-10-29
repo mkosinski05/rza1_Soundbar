@@ -682,7 +682,7 @@ int_t read_data (int_t channel, uint8_t d_adr, uint8_t *r_adr, uint32_t r_byte, 
     pw_buffer[0] = (uint8_t) (d_adr & ((uint8_t)(~SAMPLE_RIIC_RWCODE_PRV_)));
 
     /* Adding slave sub-address */
-    for ( int i = 1; i <= s_byte; i++ ) {
+    for ( i = 1; i <= s_byte; i++ ) {
     	pw_buffer[i] = (*r_adr++);
     }
 
@@ -704,7 +704,7 @@ int_t read_data (int_t channel, uint8_t d_adr, uint8_t *r_adr, uint32_t r_byte, 
     if (DEVDRV_SUCCESS == ret)
     {
         /* For EEPROM devices with 1 byte addressing */
-        ret = riic_write(channel, pw_buffer, 2);
+        ret = riic_write(channel, pw_buffer, s_byte+1);
     }
 
     if (DEVDRV_SUCCESS == ret)
@@ -714,7 +714,7 @@ int_t read_data (int_t channel, uint8_t d_adr, uint8_t *r_adr, uint32_t r_byte, 
 
     if (DEVDRV_SUCCESS == ret)
     {
-        ret = riic_single_write(channel, pw_buffer[2], RIIC_TEND_WAIT_RECEIVE);
+        ret = riic_single_write(channel, pw_buffer[s_byte+1], RIIC_TEND_WAIT_RECEIVE);
     }
 
     if (DEVDRV_SUCCESS == ret)
