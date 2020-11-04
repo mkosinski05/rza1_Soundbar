@@ -4,8 +4,14 @@
     <Pin>
         <Function Id="SSIWS1" Pin="61" Port="P7_9" Group=""/>
         <Function Id="SSIWS0" Pin="38" Port="P6_9" Group=""/>
+        <Function Id="RIIC3SDA" Pin="156" Port="P1_7" Group=""/>
         <Function Id="SSISCK0" Pin="33" Port="P6_8" Group=""/>
         <Function Id="SSISCK1" Pin="60" Port="P7_8" Group=""/>
+        <Function Id="IRQ2" Pin="96" Port="P1_10" Group=""/>
+        <Function Id="IRQ3" Pin="97" Port="P1_11" Group=""/>
+        <Function Id="IRQ0" Pin="94" Port="P1_8" Group=""/>
+        <Function Id="IRQ1" Pin="95" Port="P1_9" Group=""/>
+        <Function Id="IRQ4" Pin="98" Port="P1_12" Group=""/>
         <Function Id="LCD0_DATA1" Pin="120" Port="P3_1" Group=""/>
         <Function Id="LCD0_DATA0" Pin="119" Port="P3_0" Group=""/>
         <Function Id="LCD0_DATA5" Pin="131" Port="P3_5" Group=""/>
@@ -38,5 +44,6 @@
         <Function Id="LCD0_TCON4" Pin="56" Port="P7_5" Group=""/>
         <Function Id="LCD0_TCON1" Pin="30" Port="P8_9" Group=""/>
         <Function Id="LCD0_TCON0" Pin="205" Port="P5_0" Group=""/>
+        <Function Id="RIIC3SCL" Pin="155" Port="P1_6" Group=""/>
     </Pin>
 </Board>

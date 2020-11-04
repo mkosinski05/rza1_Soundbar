@@ -100,7 +100,7 @@ int32_t riic_dae6_Open(void)
     st_r_drv_riic_create_t riic_clock;
 
     /* open the I2C channel1 driver */
-    s_i2c1_ctrl.hi2c1 = open(DEVICE_INDENTIFIER "iic0", O_RDWR);
+    s_i2c1_ctrl.hi2c1 = open(DEVICE_INDENTIFIER "iic1", O_RDWR);
 
     if (DEVDRV_ERROR == s_i2c1_ctrl.hi2c1)
     {
@@ -225,11 +225,16 @@ static int32_t RIIC_CH1_REG24_Write(const uint8_t riic_addr, const uint32_t reg_
     st_r_drv_riic_config_t i2c_write;
 
     uint8_t sub_addr[3];
+    uint8_t data[3];
 
 	// Big Endian
-    sub_addr[0] = (uint8_t)((reg_addr >> 16) & 0x000000FF);
-   sub_addr[1] = (uint8_t)((reg_addr >> 8) & 0x000000FF);
-   sub_addr[2] = (uint8_t)(reg_addr & 0x000000FF);
+	sub_addr[0] = (uint8_t)((reg_addr >> 16) & 0x000000FF);
+	sub_addr[1] = (uint8_t)((reg_addr >> 8) & 0x000000FF);
+	sub_addr[2] = (uint8_t)(reg_addr & 0x000000FF);
+
+	data[0] = reg_data[2];
+	data[1] = reg_data[1];
+	data[2] = reg_data[0];
 
     /*Set RIIC Address*/
     i2c_write.device_address = riic_addr;
@@ -237,7 +242,7 @@ static int32_t RIIC_CH1_REG24_Write(const uint8_t riic_addr, const uint32_t reg_
 
     /* Assign Data to Write */
     i2c_write.number_of_bytes = 3u;
-    i2c_write.p_data_buffer = reg_data;
+    i2c_write.p_data_buffer = data;
 
     /*Write Data*/
     riic_ret = control(s_i2c1_ctrl.hi2c1, CTL_RIIC_WRITE, &i2c_write);

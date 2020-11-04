@@ -826,7 +826,7 @@ int_t write_data (int_t channel, uint8_t d_adr, uint8_t *w_adr, uint32_t w_byte,
     if (DEVDRV_SUCCESS == ret)
     {
         /* wait for bus to be free */
-        ret = wait_bus_master(channel, RIIC_BUS_MASTERSHIP_WAIT_FREE);
+       ret = wait_bus_master(channel, RIIC_BUS_MASTERSHIP_WAIT_FREE);
     }
 
     if (DEVDRV_SUCCESS == ret)

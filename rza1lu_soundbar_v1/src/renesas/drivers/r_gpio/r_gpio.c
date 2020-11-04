@@ -60,12 +60,16 @@
  * @param pin   The pin name
  */
 void gpio_init(PinName pin ) {
-	int n = pin >> 4;
-	int shift = pin;
+	int port = pin >> 4;
+	int shift = pin & 0x0F;
 	int bitmask = 1 << shift;
 
 	/* Set to Port Mode */
-	rza_io_reg_write_16( PMC(n),  0, shift, bitmask);
+	rza_io_reg_write_16( PIBC(port), 0, shift, bitmask);
+	rza_io_reg_write_16( PBDC(port), 0, shift, bitmask);
+	rza_io_reg_write_16( PM(port), 	 1, shift, bitmask);
+	rza_io_reg_write_16( PMC(port),  0, shift, bitmask);
+	rza_io_reg_write_16( PIPC(port), 0, shift, bitmask);
 }
 
 void gpios_init(uint8_t port, uint16_t pins, PinDirection mode) {
@@ -76,7 +80,7 @@ void gpios_init(uint8_t port, uint16_t pins, PinDirection mode) {
 	rza_io_reg_write_16( PMC(port),  bitmask, 0, bitmask);
 
 	if ( mode == PIN_INPUT ) {
-		rza_io_reg_write_16( PM(port),  bitmask, 0, bitmask);
+		rza_io_reg_write_16( PIBC(port),  bitmask, 1, bitmask);
 	} else {
 		rza_io_reg_write_16( PM(port),  ~bitmask, 0, bitmask);
 	}
@@ -98,25 +102,20 @@ void gpio_mode(PinName pin, PinMode mode){
  */
 void gpio_dir(PinName pin, PinDirection direction){
 	int n = pin >> 4;
-	int shift = pin & 0xF;
+	int shift = pin & 0x0F;
 	int bitmask = 1 << shift;
 
 	/* Set to Port Mode */
 	switch ( direction) {
 		case PIN_INPUT :
-			rza_io_reg_write_32( PMSR(n),  1, shift+16, bitmask<<16);
-			rza_io_reg_write_32( PMSR(n),  1, shift, bitmask);
+
 			rza_io_reg_write_16( PIBC(n),  1, shift, bitmask);
 			break;
+
 		case PIN_OUTPUT :
-#if 0
-			rza_io_reg_write_32( PMSR(n),  1, shift+16, bitmask<<16);
-			rza_io_reg_write_32( PMSR(n),  0, shift, bitmask);
-			rza_io_reg_write_16( PIBC(n),  0, shift, bitmask);
-#else
 			rza_io_reg_write_16( PM(n),  0, shift, bitmask);
-#endif
 			break;
+
 		default :
 			break;
 	}
@@ -134,12 +133,8 @@ void gpio_write(PinName pin, int value){
 	int bitmask = 1 << shift;
 
 	/* Set to Port Mode */
-#if 0
-	rza_io_reg_write_32( PSR(n),  1, shift+16, bitmask<<16);
-	rza_io_reg_write_32( PSR(n),  (value & 0x0001), shift, bitmask);
-#else
 	rza_io_reg_write_16( PORT(n),  value, shift, bitmask);
-#endif
+
 }
 
 void gpios_write(uint8_t port, uint16_t pins, int value) {
@@ -157,12 +152,12 @@ void gpios_write(uint8_t port, uint16_t pins, int value) {
  */
 int gpio_read(PinName pin){
 	int n = pin >> 4;
-	int shift = pin;
-	int bitmask = 1 << shift;
+	uint16_t shift = pin & 0x0F;
+	uint16_t bitmask = 1 << shift;
 	int value = 0;
 
 	/* Set to Port Mode */
-	value = rza_io_reg_read_32( PSR(n),  0, shift, bitmask);
+	value = rza_io_reg_read_16( PPR(n),  shift, bitmask);
 
 	return value;
 }

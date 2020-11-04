@@ -82,7 +82,7 @@
 
 /** Specifies what channels are supported by this low level driver.
  * It is used to inform the high level driver the supported channels */
-    #define RIIC_LLD_SUPPORTED_CHANNELS    ((e_channel_id_t) (R_CH0 | R_CH1))
+    #define RIIC_LLD_SUPPORTED_CHANNELS    ((e_channel_id_t) (R_CH0 | R_CH1 | R_CH2 | R_CH3))
 
 /** Specifies the total number of channels supported by this low level driver */
     #define RIIC_LLD_NUM_CHANNELS           (4)

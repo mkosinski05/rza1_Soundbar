@@ -107,8 +107,10 @@ static const st_port_config_t GPIO_SC_TABLE_i2c2[] =
 static const st_port_init_config_t GPIO_SC_INIT_i2c2 = { 0,	0,	&GPIO_SC_TABLE_i2c2[0]	};
 static const st_port_config_t GPIO_SC_TABLE_i2c3[] =
 {
+	{P1_7,	FUNCTION_MODE1,	PIN_IO},	// Pin Function : RIIC3SDA
+	{P1_6,	FUNCTION_MODE1,	PIN_IO},	// Pin Function : RIIC3SCL
 };
-static const st_port_init_config_t GPIO_SC_INIT_i2c3 = { 0,	0,	&GPIO_SC_TABLE_i2c3[0]	};
+static const st_port_init_config_t GPIO_SC_INIT_i2c3 = { 0,	2,	&GPIO_SC_TABLE_i2c3[0]	};
 static const st_port_config_t GPIO_SC_TABLE_ssi0[] =
 {
 	{P6_9,	FUNCTION_MODE3,	PIN_IO},	// Pin Function : SSIWS0
@@ -135,8 +137,13 @@ static const st_port_config_t GPIO_SC_TABLE_ssi3[] =
 static const st_port_init_config_t GPIO_SC_INIT_ssi3 = { 0,	0,	&GPIO_SC_TABLE_ssi3[0]	};
 static const st_port_config_t GPIO_SC_TABLE_irq[] =
 {
+	{P1_10,	FUNCTION_MODE2,	PIN_INPUT},	// Pin Function : IRQ2
+	{P1_11,	FUNCTION_MODE2,	PIN_INPUT},	// Pin Function : IRQ3
+	{P1_8,	FUNCTION_MODE2,	PIN_INPUT},	// Pin Function : IRQ0
+	{P1_9,	FUNCTION_MODE2,	PIN_INPUT},	// Pin Function : IRQ1
+	{P1_12,	FUNCTION_MODE2,	PIN_INPUT},	// Pin Function : IRQ4
 };
-static const st_port_init_config_t GPIO_SC_INIT_irq = { 0,	0,	&GPIO_SC_TABLE_irq[0]	};
+static const st_port_init_config_t GPIO_SC_INIT_irq = { 0,	5,	&GPIO_SC_TABLE_irq[0]	};
 static const st_port_config_t GPIO_SC_TABLE_mlb[] =
 {
 };

@@ -52,11 +52,19 @@
 #include "r_compiler_abstraction_api.h"
 #include "r_switch_driver.h"
 
+#include "r_port_if.h"
+#include "r_port_sc_cfg.h"
+
+
 
 
 /*******************************************************************************
  Macro definitions
  *******************************************************************************/
+#define ICR1_LOW	 0x0
+#define ICR1_FALLING 0x1
+#define ICR1_RISING  0x2
+#define ICR1_BOTH	 0x3
 
 /*******************************************************************************
  Imported global variables and functions (from other files)
@@ -123,8 +131,11 @@ void R_SWITCH_Init (PinName pin, void (* func)(uint32_t int_sense))
 
         R_INTC_Enable(INTC_ID_IRQ5);
 #else
-        st_port_init_config_t sw = { 0, 1, {0, FUNCTION_MODE2, PIN_INPUT}};
+        st_port_config_t config = {0, FUNCTION_MODE2, PIN_INPUT};
+        st_port_init_config_t sw = { 0, 1, NULL};
+        sw.p_config_table = &config;
         int irq = 0xFF;
+        int irq_num = 0;
 
         sw.p_config_table->pin = pin;
         set_pin_function(&sw);
@@ -132,27 +143,52 @@ void R_SWITCH_Init (PinName pin, void (* func)(uint32_t int_sense))
         switch ( pin ) {
         	case P1_8 :
         		irq = INTC_ID_IRQ0;
+        		irq_num = 0;
+        		break;
         	case P1_9 :
         	    irq = INTC_ID_IRQ1;
+        	    irq_num = 1;
+        		break;
         	case P1_10 :
         	    irq = INTC_ID_IRQ2;
+        	    irq_num = 2;
+        	    break;
         	case P1_11 :
         	    irq = INTC_ID_IRQ3;
+        	    irq_num = 3;
+        	    break;
         	case P1_12 :
-        	    irq = INTC_ID_IRQ4;
+        		irq = INTC_ID_IRQ4;
+        		irq_num = 4;
         	default:
         		irq = 0xFF;
 
         }
         if ( irq >= INTC_ID_IRQ0 && irq <= INTC_ID_IRQ4) {
         /* Configure and enable IRQ5 interrupts received from the user switch */
+        	/* Configure IRQs detections on falling edge */
+        	INTC.ICR1 |= ICR1_LOW << (irq_num*2);    // IRQ5 config = '01' = Falling Edge
+
 			R_INTC_Disable(irq);
 			R_INTC_RegistIntFunc(irq, &int_irq_switch);
 			R_SWITCH_SetPressCallback( irq, func);
 			R_INTC_SetPriority(irq, ISR_SWITCH_IRQ_PRIORITY);
 
-			R_INTC_Enable(INTC_ID_IRQ5);
+			R_SWITCH_SetPressCallback(irq_num, func);
 
+			R_INTC_Enable(irq);
+
+			for ( int i = 0; i < GPIO_SC_INIT_irq.count; i++ )
+			{
+				if (  GPIO_SC_INIT_irq.p_config_table[i].pin == pin )
+				{
+					set_pin_function( &GPIO_SC_INIT_irq.p_config_table[i] );
+				}
+			}
+
+        } else {
+        	gpio_init(pin);
+        	gpio_dir(pin, PIN_INPUT);
         }
 #endif
         /* Initialize MTU2 channel 4 used to de-bounce switches */
@@ -178,6 +214,15 @@ void R_SWITCH_Init (PinName pin, void (* func)(uint32_t int_sense))
  End of function  R_SWITCH_Init
  ******************************************************************************/
 
+bool_t R_SWITCH_Poll ( PinName pin )
+{
+	bool_t ret = false;
+
+	if ( 0 < gpio_read( pin ) )
+		ret = true;
+
+	return ret;
+}
 /*******************************************************************************
  * Function Name: int_irq_switch
  * Description  : Interrupt
@@ -191,9 +236,12 @@ static void int_irq_switch (uint32_t irq)
 {
     uint8_t mask = 0;
     uint16_t dummy_read;
+    uint8_t irq_num = 0;
+
 
     R_INTC_Disable(irq);
 
+    irq_num = irq-INTC_ID_IRQ0;
     /* Set the user switch flag to indicate switch was pressed */
     g_switch_press_flg |= true;
 
@@ -204,14 +252,14 @@ static void int_irq_switch (uint32_t irq)
     if (g_switch_press_callback_func[irq])
     {
         /* Execute user call-back function */
-        g_switch_press_callback_func[irq]();
+        g_switch_press_callback_func[irq_num]();
     }
 
     /* Clearing the status flag requires a dummy read */
     dummy_read = INTC.IRQRR;
 
     if ( irq < INTC_ID_IRQ5 )
-    	mask = 1 << irq;
+    	mask = 1 << (irq_num);
 
     /* Clear IRQ3/5 interrupt flag  */
     INTC.IRQRR &= mask;

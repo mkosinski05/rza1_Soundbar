@@ -68,6 +68,7 @@
 #define USER_SWITCH_PRESSED  ((GPIO.PPR7 & GPIO_P7_P79) != GPIO_P7_P79)
 #define USER_SWITCH_RELEASED ((GPIO.PPR7 & GPIO_P7_P79) == GPIO_P7_P79)
 
+
 /***********************************************************************************************************************
  Typedef definitions
  ***********************************************************************************************************************/
@@ -90,6 +91,8 @@ extern volatile uint8_t g_switch_press_flg;
  * @return None.
  */
 void R_SWITCH_Init (PinName pin, void (* func)(uint32_t int_sense) );
+
+bool_t R_SWITCH_Poll ( PinName pin );
 
 /**
  * @brief       Takes a pointer to a function, and sets it as the call-back

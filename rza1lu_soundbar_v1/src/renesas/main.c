@@ -147,11 +147,8 @@ void dummy_func ( uint32_t sense) {
 
 static void sound_task ( void *parameters) {
 
-	// Register Power Button
-	// Power button will be used to start SSI
-	R_OS_CreateEvent( &g_control_audioStream);
-	R_OS_ResetEvent(&g_control_audioStream);
-	//R_SWITCH_Init(SW_POWER_BUTTON, dummy_func);
+	// Register Button
+	r_sound_init_controls();
 
 	// Initialize Audio
 	r_soundtst_PlayBack_init();
@@ -226,7 +223,7 @@ int_t main (void)
 #if GUI_DEMO_ENABLE
     p_os_task = R_OS_CreateTask("gui", gui_task, NULL, R_OS_ABSTRACTION_PRV_DEFAULT_STACK_SIZE, TASK_BLINK_TASK_PRI);
 #else
-    // p_os_task = R_OS_CreateTask("D2Audio", sound_task, NULL, R_OS_ABSTRACTION_PRV_DEFAULT_STACK_SIZE, TASK_BLINK_TASK_PRI);
+    p_os_task = R_OS_CreateTask("D2Audio", sound_task, NULL, R_OS_ABSTRACTION_PRV_DEFAULT_STACK_SIZE, TASK_BLINK_TASK_PRI);
 #endif
 #if SOUND_TEST2_DEMO_ENABLE
 #endif

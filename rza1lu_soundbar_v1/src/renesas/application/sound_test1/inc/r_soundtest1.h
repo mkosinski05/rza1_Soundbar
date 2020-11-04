@@ -95,6 +95,10 @@ int r_soundtst_LoadSample (FIL* fp );
  */
 void r_soundtst_PlayBack_init( void );
 
+// Switch Controls
+void r_sound_init_controls ( void );
+void r_sound_control_select_audio_input ( void );
+
 #endif /* RENESAS_APPLICATION_APP_SOUND_INC_r_soundtst_H_ */
 /**************************************************************************//**
  * @} (end addtogroup)

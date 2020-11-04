@@ -105,22 +105,22 @@ static st_mount_table_t gs_mount_table[] =
 
  /* Modified by user, drivers that are not under the control of sc added here */
 
- /** SCI Channel 3 Driver added by USER */
+	/** SCI Channel 3 Driver added by USER */
    {"stdin", (st_r_driver_t *)&g_scif_driver, R_SC3},
 
-/** SCI Channel 3 Driver added by USER */
+   /** SCI Channel 3 Driver added by USER */
    {"stdout", (st_r_driver_t *)&g_scif_driver, R_SC3},
 
-/** SCI Channel 3 Driver added by USER */
+   /** SCI Channel 3 Driver added by USER */
    {"stderr", (st_r_driver_t *)&g_scif_driver, R_SC3},
 
-/** OSTM Channel 0 Driver added by USER */
+   /** OSTM Channel 0 Driver added by USER */
    {"ostm0",    (st_r_driver_t *)&g_ostm_driver, R_SC0},
 
-/** OSTM Channel 1 Driver added by USER */
+   /** OSTM Channel 1 Driver added by USER */
    {"ostm1",    (st_r_driver_t *)&g_ostm_driver, R_SC1},
 
- /** LED Driver added by USER */
+   /** LED Driver added by USER */
    {"led", (st_r_driver_t *)&g_stdio_led_driver, R_SC0},
 
    /** IIC Channel 0 Driver added by USER */
@@ -128,6 +128,12 @@ static st_mount_table_t gs_mount_table[] =
 
    /** IIC Channel 1 Driver added by USER */
    {"iic1", (st_r_driver_t *)&g_riic_driver, R_SC1},
+
+   /** IIC Channel 2 Driver added by USER */
+   {"iic2", (st_r_driver_t *)&g_riic_driver, R_SC2},
+
+   /** IIC Channel 3 Driver added by USER */
+   {"iic3", (st_r_driver_t *)&g_riic_driver, R_SC3},
 
    /** RTC driver added by USER */
    {"rtc", (st_r_driver_t *)&g_rtc_driver, R_SC0},
