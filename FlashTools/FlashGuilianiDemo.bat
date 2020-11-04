@@ -58,7 +58,8 @@ echo Please select one of the following options:
 echo. 
 echo  1 - Flash QSPI bootloader
 echo  2 - Flash  Blinky Test
-echo  3 - Flash  Soundbar Application
+echo  3 - Flash  Soundbar Application v1.0
+echo  4 - Flash  Soundbar Application v1.1
 echo. 
 echo  x - Exit
 echo.
@@ -67,7 +68,8 @@ set /p SELECTED=Your choice:
 if "%SELECTED%" == "x" goto :eof
 if "%SELECTED%" == "1" goto :flashBootloader
 if "%SELECTED%" == "2" goto :Blinky_Test
-if "%SELECTED%" == "3" goto :Release_Soundbar
+if "%SELECTED%" == "3" goto :Release_Soundbarv1
+if "%SELECTED%" == "4" goto :Release_Soundbarv11
 goto :errorInput 
 
 
@@ -92,15 +94,23 @@ pause
 cd ..
 goto :loop
 
-:Release_Soundbar
+:Release_Soundbarv1
 echo.
 pause
 cd JLink
-"%BASE%\JLink.exe" -if JTAG -speed 12000 -device R7S721031 -jtagconf -1,-1 -CommanderScript FlashApplication_Release_Soundbar.Command
+"%BASE%\JLink.exe" -if JTAG -speed 12000 -device R7S721031 -jtagconf -1,-1 -CommanderScript FlashApplication_Release_Soundbarv1.Command
 pause
 cd ..
 goto :loop
 
+:Release_Soundbarv11
+echo.
+pause
+cd JLink
+"%BASE%\JLink.exe" -if JTAG -speed 12000 -device R7S721031 -jtagconf -1,-1 -CommanderScript FlashApplication_Release_Soundbarv11.Command
+pause
+cd ..
+goto :loop
 :errorInput
 echo.
 echo Illegal input! Please try again!
