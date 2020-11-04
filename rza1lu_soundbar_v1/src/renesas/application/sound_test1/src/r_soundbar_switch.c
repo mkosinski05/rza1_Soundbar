@@ -220,21 +220,17 @@ void r_sound_init_controls ( bool_t enble_interrupts ) {
 	r_riic_dae6_Open();
 	R_OS_TaskSleep( 100 );
 
+#if 0
 	data.dword = 0x00810000;
-	//r_riic_dae6_Write( DAE_REG_WR_INPUT_SELECT, (uint8_t)&data);
-	//calculate_and_send_gain();
-
+	r_riic_dae6_Write( DAE_REG_WR_INPUT_SELECT, (uint8_t)&data);
+	calculate_and_send_gain();
+#else
 	// Switch Message Queue
 	R_OS_CreateMessageQueue ( 3, &g_switch_queue);
 
 	// Switch Task
 	R_OS_CreateTask("Soundbar Control", task_switch_listenter, NULL, R_OS_ABSTRACTION_PRV_DEFAULT_STACK_SIZE, TASK_SWITCH_TASK_PRI);
-
-
-
-
-
-
+#endif
 }
 /***********************************************************************************************************************
  End of function r_sound_init_controls
@@ -299,7 +295,7 @@ static void r_sound_volumeup ( void ) {
 	if (++g_Shared_Gain > 0 ) {
 		g_Shared_Gain = 0;
 	}
-	//calculate_and_send_gain();
+	calculate_and_send_gain();
 
 	// Wait 100 us this will This will allow the led to be visible
 	R_OS_TaskSleep(LED_HOLD_TIME);
@@ -327,7 +323,7 @@ static void r_sound_volumedown ( void ) {
 	if (--g_Shared_Gain < -100 ) {
 		g_Shared_Gain = -100;
 	}
-	//calculate_and_send_gain();
+	calculate_and_send_gain();
 
 
 	// Wait 100 us this will This will allow the led to be visable
@@ -441,7 +437,7 @@ static void r_sound_audio_input_select ( void ) {
 	}
 	if ( in_select != INPUT_TYPE_USB) {
 		// Send DAE-x Imput Select Command to i2C command to DAE-x
-		//r_riic_dae6_Write( DAE_REG_WR_INPUT_SELECT, &data);
+		r_riic_dae6_Write( DAE_REG_WR_INPUT_SELECT, &data);
 	}
 
 	// Wait 100 us this will This will allow the led to be visible
