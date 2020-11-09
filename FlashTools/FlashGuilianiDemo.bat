@@ -3,7 +3,7 @@
 rem <> Manually set path to JLink install directory here if you do not
 rem    want to use the auto detect method. Make sure a backslash
 rem    is at the end of the path
-set BASE=C:\Program Files (x86)\SEGGER\JLink_V640\
+set BASE=C:\Program Files (x86)\SEGGER\JLink_V670\
 if exist "%BASE%\JLink.exe" goto PATH_SET
 
 rem <> Try to automatically detect JLink install directory
@@ -57,9 +57,8 @@ echo.
 echo Please select one of the following options:
 echo. 
 echo  1 - Flash QSPI bootloader
-echo  2 - Flash  Blinky Test
-echo  3 - Flash  Soundbar Application v1.0
-echo  4 - Flash  Soundbar Application v1.1
+echo  2 - Flash  Soundbar Application v1.0
+echo  3 - Flash  Soundbar Application v1.1
 echo. 
 echo  x - Exit
 echo.
@@ -67,9 +66,8 @@ set /p SELECTED=Your choice:
 
 if "%SELECTED%" == "x" goto :eof
 if "%SELECTED%" == "1" goto :flashBootloader
-if "%SELECTED%" == "2" goto :Blinky_Test
-if "%SELECTED%" == "3" goto :Release_Soundbarv1
-if "%SELECTED%" == "4" goto :Release_Soundbarv11
+if "%SELECTED%" == "2" goto :Release_Soundbarv1
+if "%SELECTED%" == "3" goto :Release_Soundbarv11
 goto :errorInput 
 
 
