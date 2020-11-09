@@ -100,7 +100,7 @@ int32_t riic_dae6_Open(void)
     st_r_drv_riic_create_t riic_clock;
 
     /* open the I2C channel1 driver */
-    s_i2c1_ctrl.hi2c1 = open(DEVICE_INDENTIFIER "iic1", O_RDWR);
+    s_i2c1_ctrl.hi2c1 = open(DEVICE_INDENTIFIER "iic0", O_RDWR);
 
     if (DEVDRV_ERROR == s_i2c1_ctrl.hi2c1)
     {
