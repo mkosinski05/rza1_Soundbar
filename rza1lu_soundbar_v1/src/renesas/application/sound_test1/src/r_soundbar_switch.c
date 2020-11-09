@@ -190,8 +190,6 @@ Exported global functions (to be accessed by other files)
 
 void r_sound_init_controls ( bool_t enble_interrupts ) {
 
-	input_reg_t data;
-
 	/*** Enable Power Stages ***/
 	// Enable power to 3.3v and 1.8v line
 	gpio_init ( BOARD_LV_EN_PIN );
@@ -220,17 +218,12 @@ void r_sound_init_controls ( bool_t enble_interrupts ) {
 	r_riic_dae6_Open();
 	R_OS_TaskSleep( 100 );
 
-#if 0
-	data.dword = 0x00810000;
-	r_riic_dae6_Write( DAE_REG_WR_INPUT_SELECT, (uint8_t)&data);
-	calculate_and_send_gain();
-#else
 	// Switch Message Queue
 	R_OS_CreateMessageQueue ( 3, &g_switch_queue);
 
 	// Switch Task
 	R_OS_CreateTask("Soundbar Control", task_switch_listenter, NULL, R_OS_ABSTRACTION_PRV_DEFAULT_STACK_SIZE, TASK_SWITCH_TASK_PRI);
-#endif
+
 }
 /***********************************************************************************************************************
  End of function r_sound_init_controls
@@ -435,10 +428,12 @@ static void r_sound_audio_input_select ( void ) {
 		default:
 			break;
 	}
+//#ifdef BUILD_CONFIG_RELEASE
 	if ( in_select != INPUT_TYPE_USB) {
 		// Send DAE-x Imput Select Command to i2C command to DAE-x
-		r_riic_dae6_Write( DAE_REG_WR_INPUT_SELECT, &data);
+		//r_riic_dae6_Write( DAE_REG_WR_INPUT_SELECT, (uint8_t*)&data);
 	}
+//#endif
 
 	// Wait 100 us this will This will allow the led to be visible
 	R_OS_TaskSleep(LED_HOLD_TIME);
@@ -518,7 +513,9 @@ static void task_switch_listenter ( void ) {
 	R_SWITCH_Init(SW_BT_PAIRING_BUTTON, 	NULL);
 #endif
 
-
+	// Initialize DAE
+	r_sound_audio_input_select();
+	calculate_and_send_gain();
 
 
 	while (1) {
@@ -618,18 +615,19 @@ static void calculate_and_send_gain ( void ) {
 
 	float TWO2TWEENTYTHIRD = 8388608;
 	float value = 0;
-	uint32_t data = 0;
+	int32_t data = 0;
 
 	// Calculate the New Shared Volume Gain
 	value = g_Shared_Gain / 20;
 	value = pow(10.0, value);
 	value *= TWO2TWEENTYTHIRD * -1;
-	data = value;
-	data = data << 8;
+	data = (int32_t)value;
 
+#ifdef BUILD_CONFIG_RELEASE
 	// Send Volume Command to i2C command to DAE-x
 	// Send DAE-x Imput Select Command to i2C command to DAE-x
-	r_riic_dae6_Write( DAE_REG_WR_INPUT_SELECT, (uint8_t*)&value);
+	r_riic_dae6_Write( DAE_REG_WR_VOLUME_CONTROL, (uint8_t*)&data);
+#endif
 
 }
 /***********************************************************************************************************************
