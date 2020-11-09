@@ -132,7 +132,7 @@ int_t SSIF_Initialise(const ssif_channel_cfg_t* const p_cfg_data)
             if (false != p_info_ch->enabled)
             {
                 /* copy config data to channel info */
-                ercd = SSIF_UpdateChannelConfig(p_info_ch, &p_cfg_data[ssif_ch]);
+                SSIF_UpdateChannelConfig(p_info_ch, &p_cfg_data[ssif_ch]);
 
                 if (DEVDRV_SUCCESS == ercd)
                 {
