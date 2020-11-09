@@ -635,13 +635,13 @@ static void setup_playback ( FILE *p_in, FILE *p_out )
                 res = DEVDRV_ERROR;
             }
         }
-
+#if (TARGET_BOARD == TARGET_BOARD_STREAM_IT2 && RENESAS_BOARD == 1)
         /* initialise SSIF and Sound driver for audio streaming */
         if (DEVDRV_SUCCESS == res)
         {
             res = configure_audio();
         }
-#if (TARGET_BOARD == TARGET_BOARD_STREAM_IT2 && RENESAS_BOARD == 1)
+
         /* Sound - set sampling rate */
         if (DEVDRV_SUCCESS == res)
         {
@@ -687,7 +687,7 @@ static void setup_playback ( FILE *p_in, FILE *p_out )
  ******************************************************************************/
 static int32_t configure_audio (void)
 {
-    int32_t res = DEVDRV_ERROR;
+    int32_t res = DEVDRV_SUCCESS;
 
     /* Initialize SOUND module over i2c*/
     /* ignore error because i2c is shared with touch */
