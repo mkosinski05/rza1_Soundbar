@@ -619,7 +619,7 @@ static int_t configure_ssif_channel (int_t channel)
 #else
     gs_ssif_cfg[channel].enabled = true;
     gs_ssif_cfg[channel].int_level = ISR_SSIF_IRQ_PRIORITY;
-    gs_ssif_cfg[channel].slave_mode = false;
+    gs_ssif_cfg[channel].slave_mode = true;
     gs_ssif_cfg[channel].sample_freq = SOUND_FREQ_48000;
     gs_ssif_cfg[channel].clk_select = SSIF_CFG_CKS_AUDIO_X1;
     gs_ssif_cfg[channel].multi_ch = SSIF_CFG_MULTI_CH_1;
@@ -631,7 +631,7 @@ static int_t configure_ssif_channel (int_t channel)
     gs_ssif_cfg[channel].serial_alignment = SSIF_CFG_DATA_FIRST;
     gs_ssif_cfg[channel].parallel_alignment = SSIF_CFG_LEFT;
     gs_ssif_cfg[channel].ws_delay = SSIF_CFG_DELAY;
-    gs_ssif_cfg[channel].noise_cancel = SSIF_CFG_DISABLE_NOISE_CANCEL;
+    gs_ssif_cfg[channel].noise_cancel = SSIF_CFG_ENABLE_NOISE_CANCEL;
     gs_ssif_cfg[channel].tdm_mode = SSIF_CFG_DISABLE_TDM;
 #endif
     /* initialise driver data structures */

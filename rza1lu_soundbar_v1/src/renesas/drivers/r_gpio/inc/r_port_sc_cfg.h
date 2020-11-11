@@ -123,10 +123,11 @@ static const st_port_config_t GPIO_SC_TABLE_ssi1[] =
 {
 	{P7_9,	FUNCTION_MODE2,	PIN_IO},	// Pin Function : SSIWS1
 	{P7_8,	FUNCTION_MODE2,	PIN_IO},	// Pin Function : SSISCK1
+	{P3_8,	FUNCTION_MODE3,	PIN_INPUT},	// Pin Function : AUDIO_CLK
 	{P7_11,	FUNCTION_MODE2,	PIN_INPUT},	// Pin Function : SSIRxD1
 	{P7_10,	FUNCTION_MODE2,	PIN_OUTPUT},	// Pin Function : SSITxD1
 };
-static const st_port_init_config_t GPIO_SC_INIT_ssi1 = { 0,	4,	&GPIO_SC_TABLE_ssi1[0]	};
+static const st_port_init_config_t GPIO_SC_INIT_ssi1 = { 0,	5,	&GPIO_SC_TABLE_ssi1[0]	};
 static const st_port_config_t GPIO_SC_TABLE_ssi2[] =
 {
 };
