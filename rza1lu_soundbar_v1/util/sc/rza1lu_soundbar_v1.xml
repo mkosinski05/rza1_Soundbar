@@ -12,6 +12,8 @@
         <Function Id="IRQ0" Pin="94" Port="P1_8" Group=""/>
         <Function Id="IRQ1" Pin="95" Port="P1_9" Group=""/>
         <Function Id="IRQ4" Pin="98" Port="P1_12" Group=""/>
+        <Function Id="AUDIO_X1" Pin="107" Port="AUDIO_X1" Group=""/>
+        <Function Id="AUDIO_CLK" Pin="138" Port="P3_8" Group=""/>
         <Function Id="LCD0_DATA1" Pin="120" Port="P3_1" Group=""/>
         <Function Id="LCD0_DATA0" Pin="119" Port="P3_0" Group=""/>
         <Function Id="LCD0_DATA5" Pin="131" Port="P3_5" Group=""/>
