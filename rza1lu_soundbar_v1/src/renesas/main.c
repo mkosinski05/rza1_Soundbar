@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
+
 #include <unistd.h>
 #include "r_typedefs.h"
 #include "compiler_settings.h"
@@ -46,7 +47,7 @@
 #include "r_gpio_if.h"
 #include "gpio_iobitmask.h"
 #include "sound_dae6.h"
-#include "r_soundtest1.h"
+#include "r_soundbar.h"
 #include "r_switch_driver.h"
 
 #include "command.h"
@@ -56,7 +57,6 @@
 #include "r_fatfs_abstraction.h"
 #include "ff.h"
 
-#include "r_soundtest1.h"
 #include "main.h"
 
 static st_iostr_t gs_iostr[3];

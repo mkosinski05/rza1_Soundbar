@@ -64,5 +64,7 @@
 <pinItem allocation="95" comments="" direction="None" id="IRQ1" status="0"/>
 <pinItem allocation="156" comments="" direction="None" id="RIIC3SDA" status="0"/>
 <pinItem allocation="155" comments="" direction="None" id="RIIC3SCL" status="0"/>
+<pinItem allocation="138" comments="" direction="None" id="AUDIO_CLK" status="0"/>
+<pinItem allocation="107" comments="" direction="None" id="AUDIO_X1" status="0"/>
 </tool>
 </smc>
