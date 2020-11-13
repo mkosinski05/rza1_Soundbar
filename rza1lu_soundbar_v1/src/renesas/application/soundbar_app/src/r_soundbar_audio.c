@@ -403,12 +403,7 @@ static void task_playback_sound_demo (void *parameters)
             {
                 /* Update SSIF configuration */
                 control(gs_ssif_handle, R_SSIF_AIO_WRITE_CONTROL, (void *) &tx_aiocb[loop]);
-#if 0
-                for ( int i = 0; i < REC_DMA_SIZE_PRV_; i+=3 ){
-                	gsp_sound_control_t->p_playback_data[loop * REC_DMA_SIZE_PRV_+i] = swapLong(gsp_sound_control_t->p_playback_data[loop * REC_DMA_SIZE_PRV_+i]);
-                	//gsp_sound_control_t->p_playback_data[loop * REC_DMA_SIZE_PRV_+i] = gsp_sound_control_t->p_playback_data[loop * REC_DMA_SIZE_PRV_+i+2];
-                }
-#endif
+
                 /* write from block to SSIF */
                 write(gs_ssif_handle, &gsp_sound_control_t->p_playback_data[loop * REC_DMA_SIZE_PRV_],
                 REC_DMA_SIZE_PRV_);
@@ -430,12 +425,7 @@ static void task_playback_sound_demo (void *parameters)
 
             /* Update SSIF configuration */
             control(gs_ssif_handle, R_SSIF_AIO_WRITE_CONTROL, (void *) &tx_aiocb[div]);
-#if 0
-			for ( int i = 0; i < REC_DMA_SIZE_PRV_; i+=3 ){
-				gsp_sound_control_t->p_playback_data[loop * REC_DMA_SIZE_PRV_+i] = swapLong(gsp_sound_control_t->p_playback_data[loop * REC_DMA_SIZE_PRV_+i]);
-				//gsp_sound_control_t->p_playback_data[loop * REC_DMA_SIZE_PRV_+i] = gsp_sound_control_t->p_playback_data[loop * REC_DMA_SIZE_PRV_+i+2];
-			}
-#endif
+
             /* write from block to SSIF */
             write(gs_ssif_handle, &gsp_sound_control_t->p_playback_data[txi_data * REC_DMA_SIZE_PRV_],
             REC_DMA_SIZE_PRV_);
@@ -586,6 +576,11 @@ static void setup_playsample (FILE *p_in, FILE *p_out, void *p_data)
  ***********************************************************************************************************************/
 static void setup_playback ( FILE *p_in, FILE *p_out )
 {
+	/* unused argument */
+	/* May be required l8tr */
+	UNUSED_PARAM(p_in);
+	UNUSED_PARAM(p_out);
+
     bool_t user_abort = false;
     os_task_t *p_task = 0;
     void *p_wavebuf_non_aligned;
@@ -677,7 +672,7 @@ static void setup_playback ( FILE *p_in, FILE *p_out )
             // fprintf(p_out, "Press any key to terminate demo\r\n");
 
             /* Create play task (to normalise calling task) */
-            p_task = R_OS_CreateTask("rec sound", task_playback_sound_demo, p_out,
+            p_task = R_OS_CreateTask("DAE Playback", task_playback_sound_demo, p_out,
             R_OS_ABSTRACTION_PRV_SMALL_STACK_SIZE,
             TASK_RECORD_SOUND_APP_PRI);
 		}
