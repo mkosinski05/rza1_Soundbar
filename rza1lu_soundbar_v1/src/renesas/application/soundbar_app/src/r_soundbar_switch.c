@@ -44,6 +44,9 @@ Includes   <System Includes> , "Project Includes"
 #include "RegisterSet.h"
 
 #include "r_os_abstraction_api.h"
+#include "FreeRTOS.h"
+#include "queue.h"
+#include "task.h"
 
 /******************************************************************************
 Typedef definitions
@@ -140,6 +143,7 @@ Macro definitions
 
 #define LED_HOLD_TIME 100
 
+#define DEBOUNCE_DELAY	(100)
 
 /******************************************************************************
 Imported global variables and functions (from other files)
@@ -153,11 +157,11 @@ Exported global variables and functions (to be accessed by other files)
 Private global variables and functions
 ******************************************************************************/
 
-static os_msg_queue_handle_t g_switch_queue;
+static QueueHandle_t g_switch_queue;
 
 static void task_switch_listenter ( void );
 
-static void switch_callback ( uint32_t sense );
+static void switch_callback ( int sense );
 
 static void r_sound_audio_input_select ( void );
 
@@ -219,7 +223,7 @@ void r_sound_init_controls ( bool_t enble_interrupts ) {
 	R_OS_TaskSleep( 100 );
 
 	// Switch Message Queue
-	R_OS_CreateMessageQueue ( 3, &g_switch_queue);
+	g_switch_queue = xQueueCreate ( 3, sizeof(void*));
 
 	// Switch Task
 	R_OS_CreateTask("Soundbar Control", task_switch_listenter, NULL, R_OS_ABSTRACTION_PRV_DEFAULT_STACK_SIZE, TASK_SWITCH_TASK_PRI);
@@ -428,12 +432,12 @@ static void r_sound_audio_input_select ( void ) {
 		default:
 			break;
 	}
-//#ifdef BUILD_CONFIG_RELEASE
+#ifdef BUILD_CONFIG_RELEASE
 	if ( in_select != INPUT_TYPE_USB) {
 		// Send DAE-x Imput Select Command to i2C command to DAE-x
-		//r_riic_dae6_Write( DAE_REG_WR_INPUT_SELECT, (uint8_t*)&data);
+		r_riic_dae6_Write( DAE_REG_WR_INPUT_SELECT, (uint8_t*)&data);
 	}
-//#endif
+#endif
 
 	// Wait 100 us this will This will allow the led to be visible
 	R_OS_TaskSleep(LED_HOLD_TIME);
@@ -481,9 +485,10 @@ static void r_sound_bt_pairing ( void ) {
 
 static void task_switch_listenter ( void ) {
 
-	but_t value = BUTTON_PRESS_NONE;
-	os_msg_t msg;
+	static but_t current_msg = BUTTON_PRESS_NONE;
+	static but_t last_msg;
 	bool_t ret;
+	static uint16_t ms;
 
 	// Setup Control Leds
 	LED_INIT ( LED_POWER_PIN );
@@ -499,7 +504,7 @@ static void task_switch_listenter ( void ) {
 	LED_INIT ( LED_WIFI_PIN );
 
 	/** Initialize switches and register callback **/
-#if 0
+#if 1
 	R_SWITCH_Init(SW_POWER_BUTTON, 			switch_callback);
 	R_SWITCH_Init(SW_VOLUME_UP_BUTTON, 		switch_callback);
 	R_SWITCH_Init(SW_VOLUME_DOWN_BUTTON, 	switch_callback);
@@ -519,13 +524,17 @@ static void task_switch_listenter ( void ) {
 
 
 	while (1) {
-#if 0
+#if 1
 		// Waitl for message Queue
-		ret = R_OS_GetMessageQueue( g_switch_queue, msg, R_OS_ABSTRACTION_PRV_EV_WAIT_INFINITE, true );
+		ret = xQueueReceive( g_switch_queue, (void*)&current_msg, R_OS_ABSTRACTION_PRV_EV_WAIT_INFINITE );
+		last_msg = current_msg;
 
+		// Filter debouce
+		while(ret ) {
+			// Read Queue for addtional message every 10ms till queue is empty
+			ret = xQueueReceive( g_switch_queue, (void*)&current_msg, 10 );
+		}
 
-		// Check for valid message
-		if ( ret ) {
 #else
 
 		R_OS_TaskSleep( 250 );
@@ -533,36 +542,34 @@ static void task_switch_listenter ( void ) {
 		for ( int b = BUTTON_PRESS_VOLUP; b < BUTTON_PRESS_NONE; b++ ) {
 
 			if ( R_SWITCH_Poll ( g_button_pins[b] )) {
-				value = BUTTON_PRESS_NONE;
+				current_msg = BUTTON_PRESS_NONE;
 			} else {
-				value = b;
+				current_msg = b;
 			}
 
 
 #endif
-			// Perform task
-			switch ( value ) {
-				case BUTTON_PRESS_PWR:
-					r_sound_power();
-					break;
-				case BUTTON_PRESS_VOLUP:
-					r_sound_volumeup();
-					break;
-				case BUTTON_PRESS_VOLDWN:
-					r_sound_volumedown();
-					break;
-				case BUTTON_PRESS_BTPAIR:
-					r_sound_bt_pairing();
-					break;
-				case BUTTON_PRESS_AUDIOSELECT:
-					r_sound_audio_input_select();
-					break;
-				default:
-					break;
-			}
+		// Perform task
+		switch ( last_msg ) {
+			case BUTTON_PRESS_PWR:
+				r_sound_power();
+				break;
+			case BUTTON_PRESS_VOLUP:
+				r_sound_volumeup();
+				break;
+			case BUTTON_PRESS_VOLDWN:
+				r_sound_volumedown();
+				break;
+			case BUTTON_PRESS_BTPAIR:
+				r_sound_bt_pairing();
+				break;
+			case BUTTON_PRESS_AUDIOSELECT:
+				r_sound_audio_input_select();
+				break;
+			default:
+				break;
 		}
 	}
-
 }
 /***********************************************************************************************************************
  End of function task_switch_listenter
@@ -574,7 +581,7 @@ static void task_switch_listenter ( void ) {
  * Arguments    : none
  * Return Value : none
  **********************************************************************************************************************/
-static void switch_callback ( uint32_t sense )
+static void switch_callback ( int sense )
 {
 	but_t msg = BUTTON_PRESS_NONE;
 
@@ -598,7 +605,7 @@ static void switch_callback ( uint32_t sense )
 			break;
 	}
 
-	R_OS_PutMessageQueue( g_switch_queue, (os_msg_t)&msg);
+	xQueueSendFromISR( (QueueHandle_t)g_switch_queue, (void*)&msg, 0UL);
 }
 /***********************************************************************************************************************
  End of function switch_callback
@@ -623,11 +630,11 @@ static void calculate_and_send_gain ( void ) {
 	value *= TWO2TWEENTYTHIRD * -1;
 	data = (int32_t)value;
 
-#ifdef BUILD_CONFIG_RELEASE
+
 	// Send Volume Command to i2C command to DAE-x
 	// Send DAE-x Imput Select Command to i2C command to DAE-x
 	r_riic_dae6_Write( DAE_REG_WR_VOLUME_CONTROL, (uint8_t*)&data);
-#endif
+
 
 }
 /***********************************************************************************************************************

@@ -88,10 +88,10 @@ static void mtu_int_gfa (uint32_t int_sense);
 volatile uint8_t g_switch_press_flg = 0u;
 
 /* Switch press call-back pointer declaration */
-static void (*g_switch_press_callback_func[4]) (void) = {0,0,0,0};
+static void (*g_switch_press_callback_func[4]) (int) = {0,0,0,0};
 
 /* Switch release call-back pointer declaration */
-static void (*g_switch_release_callback_func[4]) (void) = {0,0,0,0};
+static void (*g_switch_release_callback_func[4]) (int) = {0,0,0,0};
 
 /***********************************************************************************************************************
  Private global variables and functions
@@ -108,29 +108,7 @@ void R_SWITCH_Init (PinName pin, void (* func)(uint32_t int_sense))
 {
     if (func != NULL)  // Interrupt driven
     {
-#if 0
-        /* Set SWITCH USER (IRQ5) as input pin (P7_9) */
-        rza_io_reg_write_16(&GPIO.PBDC7, 1, GPIO_PBDC7_PBDC79_SHIFT, GPIO_PBDC7_PBDC79);
-        rza_io_reg_write_16(&GPIO.PM7, 1, GPIO_PM7_PM79_SHIFT, GPIO_PM7_PM79);
-        rza_io_reg_write_16(&GPIO.P7, 1, GPIO_P7_P79_SHIFT, GPIO_P7_P79);
-        rza_io_reg_write_16(&GPIO.PMC7, 1, GPIO_PMC7_PMC79_SHIFT, GPIO_PMC7_PMC79);
 
-        rza_io_reg_write_16(&GPIO.PFCAE7, 0, GPIO_PFCAE7_PFCAE79_SHIFT, GPIO_PFCAE7_PFCAE79);
-        rza_io_reg_write_16(&GPIO.PFCE7, 1, GPIO_PFCE7_PFCE79_SHIFT, GPIO_PFCE7_PFCE79);
-        rza_io_reg_write_16(&GPIO.PFC7, 1, GPIO_PFC7_PFC79_SHIFT, GPIO_PFC7_PFC79);
-
-        rza_io_reg_write_16(&GPIO.PIPC7, 1, GPIO_PIPC7_PIPC79_SHIFT, GPIO_PIPC7_PIPC79);
-
-        /* Configure IRQs detections on falling edge */
-        INTC.ICR1 |= 0x0400;    // IRQ5 config = '01' = Falling Edge
-
-        /* Configure and enable IRQ5 interrupts received from the user switch */
-        R_INTC_Disable(INTC_ID_IRQ5);
-        R_INTC_RegistIntFunc(INTC_ID_IRQ5, &int_irq_switch);
-        R_INTC_SetPriority(INTC_ID_IRQ5, ISR_SWITCH_IRQ_PRIORITY);
-
-        R_INTC_Enable(INTC_ID_IRQ5);
-#else
         st_port_config_t config = {0, FUNCTION_MODE2, PIN_INPUT};
         st_port_init_config_t sw = { 0, 1, NULL};
         sw.p_config_table = &config;
@@ -160,6 +138,7 @@ void R_SWITCH_Init (PinName pin, void (* func)(uint32_t int_sense))
         	case P1_12 :
         		irq = INTC_ID_IRQ4;
         		irq_num = 4;
+        		break;
         	default:
         		irq = 0xFF;
 
@@ -190,24 +169,15 @@ void R_SWITCH_Init (PinName pin, void (* func)(uint32_t int_sense))
         	gpio_init(pin);
         	gpio_dir(pin, PIN_INPUT);
         }
-#endif
         /* Initialize MTU2 channel 4 used to de-bounce switches */
         init_switch_debounce_timer();
     }
     else  // Classic polled button
     {
-#if 0
-        /* Configure SW1 (P7_9) as an input */
-        rza_io_reg_write_16(&GPIO.PIBC7, 0, GPIO_PIBC7_PIBC79_SHIFT, GPIO_PIBC7_PIBC79);
-        rza_io_reg_write_16(&GPIO.PBDC7, 0, GPIO_PIBC7_PIBC79_SHIFT, GPIO_PIBC7_PIBC79);
-        rza_io_reg_write_16(&GPIO.PM7, 1, GPIO_PM7_PM79_SHIFT, GPIO_PM7_PM79);
-        rza_io_reg_write_16(&GPIO.PMC7, 0, GPIO_PMC7_PMC79_SHIFT, GPIO_PMC7_PMC79);
-        rza_io_reg_write_16(&GPIO.PIPC7, 1, 9u, 0x200u);
-        rza_io_reg_write_16(&GPIO.PIBC7, 1, GPIO_PIBC7_PIBC79_SHIFT, GPIO_PIBC7_PIBC79);
-#else
+    	// Setup switch for polling
         gpio_init(pin);
         gpio_dir(pin, PIN_INPUT);
-#endif
+
     }
 }
 /*****************************************************************************
@@ -249,11 +219,15 @@ static void int_irq_switch (uint32_t irq)
     switch_debounce_delay();
 
     /* Check if switch press call-back function is not NULL */
-    if (g_switch_press_callback_func[irq])
-    {
-        /* Execute user call-back function */
-        g_switch_press_callback_func[irq_num]();
+    if ( irq >= INTC_ID_IRQ0 && irq <= INTC_ID_IRQ4 ){
+
+    	if (g_switch_press_callback_func[irq_num])
+		{
+			/* Execute user call-back function */
+			g_switch_press_callback_func[irq_num](irq_num);
+		}
     }
+
 
     /* Clearing the status flag requires a dummy read */
     dummy_read = INTC.IRQRR;
@@ -340,7 +314,7 @@ static void init_switch_debounce_timer (void)
     MTU2.TIER_4 = 0x01;
 
     /* Set the period */
-    MTU2.TGRA_4 = 5000;
+    MTU2.TGRA_4 = 0xFFFF;//5000;
 
     /* TCNT cleared by TGRA compare match, rising edge count,
      clock source prescale P0/1024 = 32.226KHz,  */
