@@ -630,10 +630,11 @@ static void calculate_and_send_gain ( void ) {
 	value *= TWO2TWEENTYTHIRD * -1;
 	data = (int32_t)value;
 
-
+#ifdef BUILD_CONFIG_RELEASE
 	// Send Volume Command to i2C command to DAE-x
 	// Send DAE-x Imput Select Command to i2C command to DAE-x
 	r_riic_dae6_Write( DAE_REG_WR_VOLUME_CONTROL, (uint8_t*)&data);
+#endif
 
 
 }
